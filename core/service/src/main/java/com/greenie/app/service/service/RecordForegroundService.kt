@@ -1,11 +1,8 @@
 package com.greenie.app.service.service
 
 import android.app.Service
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
-import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -33,12 +30,9 @@ class RecordForegroundService : Service() {
     @ApplicationContext
     lateinit var context: Context
 
-    private val binder = RecordServiceBinder()
-
     override fun onCreate() {
         super.onCreate()
         startForeground(RECORD_SERVICE_NOTIFICATION_ID, createNotification())
-
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -54,6 +48,7 @@ class RecordForegroundService : Service() {
                         averageDecibel = 0f,
                     )
                 )
+
             }
 
             RecordServiceAction.PAUSE_RECORDING.action -> {
@@ -88,19 +83,20 @@ class RecordForegroundService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    inner class RecordServiceBinder : Binder() {
-        val service: RecordForegroundService
-            get() = this@RecordForegroundService
-    }
-
     override fun onBind(intent: Intent?): IBinder? {
-        return binder
+        return null
     }
 
-    private fun createNotification() =
+    private fun createNotification(leftTime: Long? = null) =
         NotificationCompat.Builder(this, serviceNotificationChannelId)
             .setContentTitle(getString(R.string.record_service_notification_title))
-            .setContentText(getString(R.string.record_service_notification_content, "0.0"))
+            .run {
+                if (leftTime != null) {
+                    val leftTimeSecond = leftTime/1000
+                    setContentText(getString(R.string.record_service_notification_content, String.format("%02d:%02d:%02d", leftTimeSecond / 3600, (leftTimeSecond % 3600) / 60, leftTimeSecond % 60)))
+                }
+                this
+            }
             .setSmallIcon(R.drawable.ic_service)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
@@ -123,7 +119,7 @@ class RecordForegroundService : Service() {
             Intent(context, RecordForegroundService::class.java)
         }
 
-        fun startRecordService(context: Context): ServiceConnection {
+        fun startRecordService(context: Context) {
             serviceState = RecordServiceState.Recording
             val pendingIntent = RecordServiceIntent(context).apply {
                 action = RecordServiceAction.START_RECORDING.action
@@ -134,9 +130,6 @@ class RecordForegroundService : Service() {
             } else {
                 context.startService(pendingIntent)
             }
-
-            context.bindService(pendingIntent, connection, Context.BIND_AUTO_CREATE)
-            return connection
         }
 
         fun pauseRecordService(context: Context) {
@@ -154,7 +147,6 @@ class RecordForegroundService : Service() {
                 action = RecordServiceAction.STOP_RECORDING.action
             }
 
-            context.unbindService(connection)
             context.startService(pendingIntent)
         }
 
@@ -194,18 +186,4 @@ private enum class RecordServiceAction(val action: String) {
     START_RECORDING("START_RECORDING"),
     PAUSE_RECORDING("PAUSE_RECORDING"),
     STOP_RECORDING("STOP_RECORDING"),
-}
-
-private val connection = object : ServiceConnection {
-    lateinit var mService: RecordForegroundService
-    private var isBound = false
-
-    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-        mService = (service as RecordForegroundService.RecordServiceBinder).service
-        isBound = true
-    }
-
-    override fun onServiceDisconnected(name: ComponentName?) {
-
-    }
 }
