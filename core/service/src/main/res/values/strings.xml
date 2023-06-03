@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="record_service_channel_name">소음 분석 서비스</string>
+    <string name="record_service_channel_description">소음 분석을 위한 서비스입니다.</string>
+
+    <string name="record_service_notification_title">소음 트래킹 중…</string>
+    <string name="record_service_notification_content">남은 시간 %1$s</string>
+</resources>

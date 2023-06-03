@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="record_title">소음 측정</string>
+    <string name="decibel_unit">dB</string>
+    <string name="minimum_decibel_title">최소값</string>
+    <string name="maximum_decibel_title">최대값</string>
+    <string name="average_decibel_title">평균값</string>
+    <string-array name="record_decibel_array">
+        <!-- 0 ~ 9 dB -->
+        <item>-</item>
+        <!-- 10 ~ 19 dB -->
+        <item>-</item>
+        <!-- 20 ~ 29 dB -->
+        <item>나뭇잎 소리</item>
+        <!-- 30 ~ 39 dB -->
+        <item>속삭이는 소리</item>
+        <!-- 40 ~ 49 dB -->
+        <item>조용한 주택</item>
+        <!-- 50 ~ 59 dB -->
+        <item>조용한 사무실</item>
+        <!-- 60 ~ 69 dB -->
+        <item>조용한 승용차</item>
+        <!-- 70 ~ 79 dB -->
+        <item>시끄러운 사무실</item>
+        <!-- 80 ~ 89 dB -->
+        <item>지하철 안 소음</item>
+        <!-- 90 ~ 99 dB -->
+        <item>공연장 소음</item>
+        <!-- 100 ~ 109 dB -->
+        <item>철도 주변 소음</item>
+        <!-- 110 ~ 119 dB -->
+        <item>자동차 경적 소음</item>
+        <!-- 120 ~ 129 dB -->
+        <item>전투기 이륙 소음</item>
+    </string-array>
+    <string name="record_analyze_button">분석</string>
+
+</resources>

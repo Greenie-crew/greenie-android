@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="history_title">기록</string>
+    <string name="history_navigation_label">기록</string>
+</resources>

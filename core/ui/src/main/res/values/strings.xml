@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="permission_title">권한 요청</string>
+    <string name="permission_confirm">확인</string>
+    <string name="permission_record_message_permanently_declined">녹음 권한이 거부되었습니다.\n설정에서 권한을 허용해주세요.</string>
+    <string name="permission_record_message">이 앱은 녹음 권한이 필요합니다.</string>
+    <string name="permission_general_message_permanently_declined">권한이 거부되었습니다.\n설정에서 권한을 허용해주세요.</string>
+    <string name="permission_general_message">권한 수락이 필요합니다.</string>
+</resources>
