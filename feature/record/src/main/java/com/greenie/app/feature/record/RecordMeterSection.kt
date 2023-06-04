@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Divider
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -76,14 +77,14 @@ internal fun RecordMeterSection(
     )
 
     val soundMeterPointerRotation by animateFloatAsState(
-        targetValue = recordServiceData.decibelValue * (180/120f) - 90f,
+        targetValue = recordServiceData.decibelValue * (180 / 120f) - 90f,
         label = "Decibel Pointer Rotation"
     )
 
     val soundMeterDescriptionArray = stringArrayResource(id = R.array.record_decibel_array)
-    val soundMeterDescription by remember {
+    val soundMeterDescription by remember(soundMeterValue) {
         derivedStateOf {
-            when (recordServiceData.decibelValue.roundToInt()) {
+            when (soundMeterValue.roundToInt()) {
                 in 0 until 10 -> soundMeterDescriptionArray[0]
                 in 10 until 20 -> soundMeterDescriptionArray[1]
                 in 20 until 30 -> soundMeterDescriptionArray[2]
@@ -186,6 +187,7 @@ internal fun RecordMeterSection(
                 .align(Alignment.CenterHorizontally)
                 .padding(vertical = 14.dp),
             text = soundMeterDescription,
+            color = LocalTextStyle.current.color,
             style = GreenieTypography.a_result,
         )
 
@@ -250,7 +252,7 @@ private fun RecordDetailInfoItem(
                         fontWeight = FontWeight.Bold,
                     )
                 ) {
-                    append(decibelValue.toString().format("%.1f"))
+                    append(String.format("%.1f", decibelValue).padStart(4, '0'))
                 }
                 withStyle(
                     style = SpanStyle(
@@ -285,6 +287,7 @@ internal fun PreviewRecordMeterSection() {
         recordServiceData = RecordServiceData(
             decibelValue = 50f,
             isRecording = false,
+            isSaving = false,
             hasRecord = true,
             minimumDecibel = 0f,
             maximumDecibel = 120f,

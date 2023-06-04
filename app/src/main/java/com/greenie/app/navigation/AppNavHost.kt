@@ -58,7 +58,8 @@ internal fun GreenieNavHost(
                 RecordForegroundService.saveRecord(context)
             },
             onAnalyseRecord = {
-                RecordForegroundService.analyzeRecord(context)
+                RecordForegroundService.saveRecord(context)
+                // Navigate to result screen
             },
         )
 

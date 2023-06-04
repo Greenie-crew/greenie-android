@@ -11,10 +11,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,11 +22,6 @@ class RecordViewModel @Inject constructor(
 ) : ViewModel() {
     internal val recordArgs: RecordArgs = RecordArgs(savedStateHandle)  // Record Type
 
-    val recordServiceData: Flow<RecordServiceData> = getRecordServiceState()
-        .map {
-            it.recordState
-        }
-
     private val _recordUiState = MutableSharedFlow<RecordUiState>()
     internal val recordUiState: StateFlow<RecordUiState> = _recordUiState
         .stateIn(
@@ -37,21 +30,15 @@ class RecordViewModel @Inject constructor(
             initialValue = RecordUiState.IDLE
         )
 
-    init {
-        viewModelScope.launch {
-            recordServiceData.collectLatest { serviceData ->
-                if (serviceData.isRecording) {
-                    _recordUiState.emit(RecordUiState.IDLE)
-                } else {
-                    if (serviceData.hasRecord) {
-                        _recordUiState.emit(RecordUiState.IDLE)
-                    } else {
-                        _recordUiState.emit(RecordUiState.LOADING)
-                    }
-                }
+    val recordServiceData: Flow<RecordServiceData> = getRecordServiceState()
+        .map { serviceEntity ->
+            if (serviceEntity.recordState.isSaving) {
+                _recordUiState.emit(RecordUiState.LOADING)
+            } else {
+                _recordUiState.emit(RecordUiState.IDLE)
             }
+            serviceEntity.recordState
         }
-    }
 }
 
 internal sealed interface RecordUiState {

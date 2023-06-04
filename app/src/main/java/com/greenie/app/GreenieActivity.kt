@@ -38,10 +38,9 @@ class GreenieActivity : ComponentActivity() {
             val lifecycleOwner = LocalLifecycleOwner.current
             val permissionStates = rememberMultiplePermissionsState(
                 permissions = mutableListOf<String>(
-
+                    Manifest.permission.RECORD_AUDIO
                 ).apply {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        add(Manifest.permission.RECORD_AUDIO)
                         add(Manifest.permission.FOREGROUND_SERVICE)
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

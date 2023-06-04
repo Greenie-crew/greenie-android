@@ -32,9 +32,11 @@ internal fun RecordRoute(
     val recordUiState by viewModel.recordUiState.collectAsStateWithLifecycle()
     val recordServiceData by viewModel.recordServiceData.collectAsStateWithLifecycle(
         RecordServiceData(
-            decibelValue = 0f,
+            fileName = "",
             isRecording = false,
+            isSaving = false,
             hasRecord = false,
+            decibelValue = 0f,
             minimumDecibel = 0f,
             maximumDecibel = 0f,
             averageDecibel = 0f,
@@ -122,12 +124,14 @@ private fun RecordScreenPreview() {
     AppTheme {
         RecordScreen(
             recordServiceData = RecordServiceData(
+                fileName = "",
+                isRecording = false,
+                isSaving = false,
+                hasRecord = false,
                 decibelValue = 70.2f,
                 minimumDecibel = 0f,
                 maximumDecibel = 0f,
                 averageDecibel = 0f,
-                isRecording = false,
-                hasRecord = false,
             ),
             onStartRecord = {},
             onPauseRecord = {},

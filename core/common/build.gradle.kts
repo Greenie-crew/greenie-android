@@ -2,6 +2,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.kapt)
 }
 
 kotlin {
@@ -29,6 +31,9 @@ dependencies {
     implementation(libs.appcompat)
 
     implementation(libs.bundles.tensorflow)
+
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 
     testImplementation(libs.junit4)
     androidTestImplementation(libs.junit)
