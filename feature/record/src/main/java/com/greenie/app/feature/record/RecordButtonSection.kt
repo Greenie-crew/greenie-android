@@ -26,7 +26,7 @@ import com.greenie.app.core.designsystem.theme.GreenieTypography
 internal fun RecordButtonSection(
     modifier: Modifier = Modifier,
     isRecording: Boolean,
-    hasRecord: Boolean,
+    showAnalyzeButton: Boolean,
     onStartRecord: () -> Unit,
     onPauseRecord: () -> Unit,
     onSaveRecord: () -> Unit,
@@ -37,7 +37,7 @@ internal fun RecordButtonSection(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (hasRecord) {
+        if (showAnalyzeButton) {
             Box(
                 modifier = Modifier
                     .weight(0.7f)
@@ -123,7 +123,7 @@ internal fun RecordButtonSection(
             }
         }
         Spacer(modifier = Modifier.weight(0.6f))
-        if (hasRecord) {
+        if (showAnalyzeButton) {
             Box(
                 modifier = Modifier
                     .weight(0.7f)

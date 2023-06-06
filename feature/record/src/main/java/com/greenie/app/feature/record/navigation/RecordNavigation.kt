@@ -28,7 +28,7 @@ fun NavGraphBuilder.recordScreen(
     onStartRecord: () -> Unit,
     onPauseRecord: () -> Unit,
     onSaveRecord: () -> Unit,
-    onAnalyseRecord: () -> Unit,
+    onNavigateToResult: () -> Unit,
 ) {
     composable(
         route = recordNavigationRoute,
@@ -38,7 +38,7 @@ fun NavGraphBuilder.recordScreen(
             onStartRecord = onStartRecord,
             onPauseRecord = onPauseRecord,
             onSaveRecord = onSaveRecord,
-            onAnalyseRecord = onAnalyseRecord,
+            onNavigateToResult = onNavigateToResult,
         )
     }
 }

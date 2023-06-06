@@ -1,7 +1,7 @@
 package com.greenie.app.core.data.repository
 
 import com.greenie.app.core.data.mapper.ServiceMapper.toDomain
-import com.greenie.app.core.domain.entities.RecordServiceEntity
+import com.greenie.app.core.domain.entities.RecordServiceStateEntity
 import com.greenie.app.core.domain.repository.RecordServiceRepo
 import com.greenie.app.service.source.RecordServiceDataSource
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +12,7 @@ class RecordServiceRepoImpl @Inject constructor(
     private val recordServiceDataSource: RecordServiceDataSource,
 ) : RecordServiceRepo {
 
-    override fun getRecordServiceState(): Flow<RecordServiceEntity> {
+    override fun getRecordServiceState(): Flow<RecordServiceStateEntity> {
         return recordServiceDataSource.getRecordServiceDataFlow()
             .map {
                 it.toDomain()

@@ -3,8 +3,9 @@ package com.greenie.app.feature.record
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.greenie.app.core.domain.usecase.GetRecordServiceState
+import com.greenie.app.core.domain.usecase.recordservice.GetRecordServiceState
 import com.greenie.app.core.model.RecordServiceData
+import com.greenie.app.core.model.RecordServiceState
 import com.greenie.app.feature.record.navigation.RecordArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +33,7 @@ class RecordViewModel @Inject constructor(
 
     val recordServiceData: Flow<RecordServiceData> = getRecordServiceState()
         .map { serviceEntity ->
-            if (serviceEntity.recordState.isSaving) {
+            if (serviceEntity.recordState.serviceState == RecordServiceState.SAVING) {
                 _recordUiState.emit(RecordUiState.LOADING)
             } else {
                 _recordUiState.emit(RecordUiState.IDLE)

@@ -10,6 +10,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.greenie.app.feature.history.navigation.historyScreen
 import com.greenie.app.feature.menu.navigation.menuScreen
+import com.greenie.app.feature.record.navigation.navigateToRecord
 import com.greenie.app.feature.record.navigation.recordScreen
 import com.greenie.app.service.service.RecordForegroundService
 import kotlinx.coroutines.CoroutineScope
@@ -57,9 +58,8 @@ internal fun GreenieNavHost(
             onSaveRecord = {
                 RecordForegroundService.saveRecord(context)
             },
-            onAnalyseRecord = {
-                RecordForegroundService.saveRecord(context)
-                // Navigate to result screen
+            onNavigateToResult = {
+                navController.navigateToRecord()
             },
         )
 

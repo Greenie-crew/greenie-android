@@ -133,6 +133,7 @@ object AudioRecordManager {
 
             inputStream.copyTo(output, BUFFER_SIZE_RECORDING)
         } finally {
+            inputStream.close()
             output?.close()
         }
 

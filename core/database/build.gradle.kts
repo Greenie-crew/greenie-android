@@ -1,7 +1,8 @@
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kapt)
 }
@@ -11,18 +12,12 @@ kotlin {
 }
 
 android {
-    namespace = "com.greenie.app.feature.record"
+    namespace = "com.greenie.core.database"
     compileSdk = 33
 
     defaultConfig {
         minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.androidxComposeCompiler.get()
-    }
-    buildFeatures {
-        compose = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -32,34 +27,19 @@ android {
 
 dependencies {
     implementation(projects.core.common)
-    implementation(projects.core.designsystem)
     implementation(projects.core.domain)
-    implementation(projects.core.ui)
     implementation(projects.core.model)
 
     implementation(libs.androidx.core.ktx)
 
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.bundles.androidx.compose)
-
-    implementation(libs.bundles.coil)
-
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
-    implementation(libs.hilt.ext.work)
-    implementation(libs.hilt.ext.navigation.compose)
-    kapt(libs.hilt.ext.compiler)
-
-    implementation(libs.lottie.compose)
+    implementation(libs.bundles.room)
+    kapt(libs.room.compiler)
 
     testImplementation(libs.junit4)
 
     androidTestImplementation(libs.androidx.test.ext)
     androidTestImplementation(libs.androidx.test.espresso.core)
-
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.bundles.androidx.compose.test)
-
-    debugImplementation(libs.bundles.androidx.compose.debug)
 }

@@ -46,6 +46,7 @@ import com.greenie.app.core.designsystem.theme.Colors
 import com.greenie.app.core.designsystem.theme.GreenieTypography
 import com.greenie.app.core.designsystem.theme.TriangleShape
 import com.greenie.app.core.model.RecordServiceData
+import com.greenie.app.core.model.RecordServiceState
 import kotlin.math.roundToInt
 
 @Composable
@@ -285,10 +286,10 @@ private fun RecordDetailInfoItem(
 internal fun PreviewRecordMeterSection() {
     RecordMeterSection(
         recordServiceData = RecordServiceData(
+            fileName = "Test",
+            createdTime = 0L,
             decibelValue = 50f,
-            isRecording = false,
-            isSaving = false,
-            hasRecord = true,
+            serviceState = RecordServiceState.RECORDING,
             minimumDecibel = 0f,
             maximumDecibel = 120f,
             averageDecibel = 50f,

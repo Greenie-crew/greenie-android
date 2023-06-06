@@ -26,6 +26,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.database)
     implementation(projects.core.domain)
     implementation(projects.core.model)
     implementation(projects.core.network)

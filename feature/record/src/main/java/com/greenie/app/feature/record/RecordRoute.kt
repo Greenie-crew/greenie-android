@@ -1,5 +1,6 @@
 package com.greenie.app.feature.record
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,16 +10,25 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.greenie.app.common.audioanalyze.AudioRecordManager.getRecordFile
+import com.greenie.app.common.audioanalyze.TensorflowHelper
 import com.greenie.app.core.designsystem.component.LoadingWheel
 import com.greenie.app.core.designsystem.theme.AppTheme
 import com.greenie.app.core.model.RecordServiceData
+import com.greenie.app.core.model.RecordServiceState
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 internal fun RecordRoute(
@@ -26,16 +36,15 @@ internal fun RecordRoute(
     onStartRecord: () -> Unit,
     onPauseRecord: () -> Unit,
     onSaveRecord: () -> Unit,
-    onAnalyseRecord: () -> Unit,
+    onNavigateToResult: () -> Unit,
     viewModel: RecordViewModel = hiltViewModel()
 ) {
     val recordUiState by viewModel.recordUiState.collectAsStateWithLifecycle()
     val recordServiceData by viewModel.recordServiceData.collectAsStateWithLifecycle(
         RecordServiceData(
             fileName = "",
-            isRecording = false,
-            isSaving = false,
-            hasRecord = false,
+            createdTime = 0L,
+            serviceState = RecordServiceState.IDLE,
             decibelValue = 0f,
             minimumDecibel = 0f,
             maximumDecibel = 0f,
@@ -43,23 +52,36 @@ internal fun RecordRoute(
         )
     )
 
+    val context = LocalContext.current
+
+    var reserveNavigationToResult by remember { mutableStateOf(false) }
+
+    LaunchedEffect(recordUiState) {
+        if (recordServiceData.serviceState == RecordServiceState.SAVED && reserveNavigationToResult) {
+            reserveNavigationToResult = false
+//            onNavigateToResult()
+            TensorflowHelper(context).analyzeAudio(
+                getRecordFile(context, recordServiceData.fileName)
+            ).collectLatest { result ->
+                Log.e("RecordRoute", "result: $result")
+            }
+        }
+    }
+
     RecordScreen(
         recordServiceData = recordServiceData,
         onStartRecord = {
-            showMessage("Start Record")
             onStartRecord()
         },
         onPauseRecord = {
-            showMessage("Stop Record")
             onPauseRecord()
         },
         onSaveRecord = {
-            showMessage("Save Record")
             onSaveRecord()
         },
         onAnalyseRecord = {
-            showMessage("Analyse Record")
-            onAnalyseRecord()
+            reserveNavigationToResult = true
+            onSaveRecord()
         },
     )
 
@@ -99,8 +121,9 @@ internal fun RecordScreen(
                 .padding(vertical = 16.dp)
                 .fillMaxWidth(0.7f)
                 .wrapContentHeight(),
-            isRecording = recordServiceData.isRecording,
-            hasRecord = recordServiceData.hasRecord,
+            isRecording = recordServiceData.serviceState == RecordServiceState.RECORDING,
+            showAnalyzeButton = recordServiceData.serviceState == RecordServiceState.RECORDING
+                    || recordServiceData.serviceState == RecordServiceState.PAUSED,
             onStartRecord = onStartRecord,
             onPauseRecord = onPauseRecord,
             onSaveRecord = onSaveRecord,
@@ -124,10 +147,9 @@ private fun RecordScreenPreview() {
     AppTheme {
         RecordScreen(
             recordServiceData = RecordServiceData(
-                fileName = "",
-                isRecording = false,
-                isSaving = false,
-                hasRecord = false,
+                fileName = "Test",
+                createdTime = 0L,
+                serviceState = RecordServiceState.RECORDING,
                 decibelValue = 70.2f,
                 minimumDecibel = 0f,
                 maximumDecibel = 0f,
