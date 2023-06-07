@@ -12,6 +12,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
@@ -73,7 +74,7 @@ private val LoadingContentArray = arrayOf(
 
 @Composable
 internal fun LoadingScreen() {
-    val loadingContent = LoadingContentArray.random()
+    val loadingContent = remember { LoadingContentArray.random() }
     val content = stringResource(id = loadingContent.contentResId)
     val lottieComposition by rememberLottieComposition(
         spec = LottieCompositionSpec.RawRes(loadingContent.lottieResId)
