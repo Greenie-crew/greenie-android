@@ -62,8 +62,11 @@ internal fun GreenieNavHost(
             onNavigateToResult = { fileName ->
                 navController.navigateToResult(fileName) {
                     popUpTo(startDestination) {
-                        inclusive = true
+                        saveState = true
+                        inclusive = false
                     }
+                    launchSingleTop = true
+                    restoreState = false
                 }
             },
         )
