@@ -25,9 +25,6 @@ interface RecordHistoryDao {
     @Query("SELECT * FROM record_history WHERE file_name LIKE :fileName LIMIT 1")
     suspend fun findByFileName(fileName: String): RecordHistoryResource
 
-    @Query("SELECT * FROM record_history WHERE file_path LIKE :filePath LIMIT 1")
-    suspend fun findByFilePath(filePath: String): RecordHistoryResource
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(vararg records: RecordHistoryResource): List<Long>
 
@@ -42,7 +39,4 @@ interface RecordHistoryDao {
 
     @Query("DELETE FROM record_history WHERE file_name LIKE :fileName")
     suspend fun deleteByFileName(fileName: String)
-
-    @Query("DELETE FROM record_history WHERE file_path LIKE :filePath")
-    suspend fun deleteByFilePath(filePath: String)
 }

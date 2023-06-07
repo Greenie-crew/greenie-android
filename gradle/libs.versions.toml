@@ -64,6 +64,9 @@ junit = "1.1.5"
 appcompat = "1.6.1"
 material = "1.8.0"
 
+# vico
+vico = "1.6.5"
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin"}
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
@@ -167,6 +170,11 @@ junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
+# vico
+vico = { group = "com.patrykandpatrick.vico", name = "core", version.ref = "vico" }
+vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
+vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
+
 # Dependencies of the included build-logic
 #android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 #kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -236,4 +244,10 @@ room = [
 tensorflow = [
     "tensorflow-lite-audio",
     "tensorflow-lite-gpu-plugin",
+]
+
+vico = [
+    "vico",
+    "vico-compose",
+    "vico-compose-m3",
 ]

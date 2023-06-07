@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="result_loading_content_music">밤 10시 이후에는 큰 음악 NO!</string>
+    <string name="result_loading_content_washing_machine">밤 10시~아침 7시 세탁기 NO!</string>
+    <string name="result_loading_content_cleaner">밤 10시~아침 7시 청소기 NO!</string>
+    <string name="result_loading_content_jumping">매트 깔아 발소리 줄이기</string>
+    <string name="result_loading_content_construction">공사할 땐 이웃에 양해 구하기</string>
+
+    <string name="result_loading_title">분석중…</string>
+</resources>

@@ -73,6 +73,7 @@ dependencies {
     implementation(projects.feature.menu)
     implementation(projects.feature.record)
     implementation(projects.feature.history)
+    implementation(projects.feature.result)
 
     implementation(libs.accompanist.permissions)
 

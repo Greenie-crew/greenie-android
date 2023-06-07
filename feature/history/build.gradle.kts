@@ -52,6 +52,8 @@ dependencies {
 
     implementation(libs.lottie.compose)
 
+    implementation(libs.bundles.vico)
+
     testImplementation(libs.junit4)
 
     androidTestImplementation(libs.androidx.test.ext)

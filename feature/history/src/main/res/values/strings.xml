@@ -2,4 +2,9 @@
 <resources>
     <string name="history_title">기록</string>
     <string name="history_navigation_label">기록</string>
+
+    <string name="history_category_date">날짜</string>
+    <string name="history_category_tag">카테고리</string>
+
+    <string name="history_category_detail_month">%1$d월</string>
 </resources>

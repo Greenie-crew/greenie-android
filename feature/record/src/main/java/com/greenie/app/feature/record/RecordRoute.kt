@@ -1,6 +1,5 @@
 package com.greenie.app.feature.record
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,18 +16,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.greenie.app.common.audioanalyze.AudioRecordManager.getRecordFile
-import com.greenie.app.common.audioanalyze.TensorflowHelper
 import com.greenie.app.core.designsystem.component.LoadingWheel
 import com.greenie.app.core.designsystem.theme.AppTheme
 import com.greenie.app.core.model.RecordServiceData
 import com.greenie.app.core.model.RecordServiceState
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 internal fun RecordRoute(
@@ -36,7 +31,7 @@ internal fun RecordRoute(
     onStartRecord: () -> Unit,
     onPauseRecord: () -> Unit,
     onSaveRecord: () -> Unit,
-    onNavigateToResult: () -> Unit,
+    onNavigateToResult: (fileName: String) -> Unit,
     viewModel: RecordViewModel = hiltViewModel()
 ) {
     val recordUiState by viewModel.recordUiState.collectAsStateWithLifecycle()
@@ -52,19 +47,17 @@ internal fun RecordRoute(
         )
     )
 
-    val context = LocalContext.current
-
     var reserveNavigationToResult by remember { mutableStateOf(false) }
 
     LaunchedEffect(recordUiState) {
-        if (recordServiceData.serviceState == RecordServiceState.SAVED && reserveNavigationToResult) {
+        if (recordUiState is RecordUiState.SAVED && reserveNavigationToResult) {
             reserveNavigationToResult = false
-//            onNavigateToResult()
-            TensorflowHelper(context).analyzeAudio(
-                getRecordFile(context, recordServiceData.fileName)
-            ).collectLatest { result ->
-                Log.e("RecordRoute", "result: $result")
-            }
+            onNavigateToResult(recordServiceData.fileName)
+//            TensorflowHelper(context).analyzeAudio(
+//                getRecordFile(context, recordServiceData.fileName)
+//            ).collectLatest { result ->
+//                Log.e("RecordRoute", "result: $result")
+//            }
         }
     }
 

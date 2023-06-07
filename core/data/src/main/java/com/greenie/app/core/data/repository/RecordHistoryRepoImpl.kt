@@ -2,10 +2,11 @@ package com.greenie.app.core.data.repository
 
 import com.greenie.app.core.domain.repository.RecordHistoryRepo
 import com.greenie.app.core.model.RecordHistoryData
+import com.greenie.app.core.model.RecordServiceData
 import com.greenie.core.database.dao.RecordHistoryDao
 import com.greenie.core.database.model.RecordHistoryResource
 import com.greenie.core.database.model.asExternalModel
-import com.greenie.core.database.model.asInternalModel
+import com.greenie.core.database.model.asRecordHistoryResource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -30,13 +31,13 @@ class RecordHistoryRepoImpl @Inject constructor(
         flow {
             val startDate = Calendar.getInstance().apply {
                 set(Calendar.YEAR, year)
-                set(Calendar.MONTH, month)
+                set(Calendar.MONTH, month - 1)
                 set(Calendar.DAY_OF_MONTH, 1)
             }.timeInMillis
 
             val endDate = Calendar.getInstance().apply {
                 set(Calendar.YEAR, year)
-                set(Calendar.MONTH, month)
+                set(Calendar.MONTH, month - 1)
                 set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
             }.timeInMillis
 
@@ -52,14 +53,13 @@ class RecordHistoryRepoImpl @Inject constructor(
         emit(recordHistoryDao.findByFileName(fileName).asExternalModel())
     }
 
-    override fun saveRecordHistory(vararg recordHistoryData: RecordHistoryData) = flow {
-        emit(
-            recordHistoryDao.insertAll(
-                *recordHistoryData.map {
-                    it.asInternalModel()
-                }.toTypedArray()
-            )
+    override suspend fun saveRecordHistory(vararg recordServiceData: RecordServiceData) {
+        recordHistoryDao.insertAll(
+            *recordServiceData.map(
+                RecordServiceData::asRecordHistoryResource
+            ).toTypedArray()
         )
     }
+
 
 }

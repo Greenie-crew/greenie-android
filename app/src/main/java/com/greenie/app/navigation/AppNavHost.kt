@@ -10,8 +10,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.greenie.app.feature.history.navigation.historyScreen
 import com.greenie.app.feature.menu.navigation.menuScreen
-import com.greenie.app.feature.record.navigation.navigateToRecord
 import com.greenie.app.feature.record.navigation.recordScreen
+import com.greenie.app.feature.result.navigation.navigateToResult
+import com.greenie.app.feature.result.navigation.resultScreen
 import com.greenie.app.service.service.RecordForegroundService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -58,15 +59,25 @@ internal fun GreenieNavHost(
             onSaveRecord = {
                 RecordForegroundService.saveRecord(context)
             },
-            onNavigateToResult = {
-                navController.navigateToRecord()
+            onNavigateToResult = { fileName ->
+                navController.navigateToResult(fileName) {
+                    popUpTo(startDestination) {
+                        inclusive = true
+                    }
+                }
             },
         )
 
         historyScreen(
-            onNavigateToHome = {
-                navController.popBackStack(startDestination, inclusive = true)
+            showMessage = { text ->
+                snackbarHostState.showMessage(
+                    coroutineScope = coroutineScope,
+                    text = text,
+                )
             },
+        )
+
+        resultScreen(
             showMessage = { text ->
                 snackbarHostState.showMessage(
                     coroutineScope = coroutineScope,

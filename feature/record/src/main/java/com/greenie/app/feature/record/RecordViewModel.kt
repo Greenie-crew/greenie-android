@@ -3,6 +3,7 @@ package com.greenie.app.feature.record
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.greenie.app.core.domain.usecase.recordhistory.SaveRecordHistory
 import com.greenie.app.core.domain.usecase.recordservice.GetRecordServiceState
 import com.greenie.app.core.model.RecordServiceData
 import com.greenie.app.core.model.RecordServiceState
@@ -18,8 +19,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RecordViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
-    private val getRecordServiceState: GetRecordServiceState,
+    savedStateHandle: SavedStateHandle,
+    getRecordServiceState: GetRecordServiceState,
+    private val saveRecordHistory: SaveRecordHistory,
 ) : ViewModel() {
     internal val recordArgs: RecordArgs = RecordArgs(savedStateHandle)  // Record Type
 
@@ -33,11 +35,19 @@ class RecordViewModel @Inject constructor(
 
     val recordServiceData: Flow<RecordServiceData> = getRecordServiceState()
         .map { serviceEntity ->
-            if (serviceEntity.recordState.serviceState == RecordServiceState.SAVING) {
-                _recordUiState.emit(RecordUiState.LOADING)
-            } else {
-                _recordUiState.emit(RecordUiState.IDLE)
+            when (serviceEntity.recordState.serviceState) {
+                RecordServiceState.SAVING -> {
+                    _recordUiState.emit(RecordUiState.LOADING)
+                }
+                RecordServiceState.SAVED -> {
+                    saveRecordHistory(serviceEntity.recordState)
+                    _recordUiState.emit(RecordUiState.SAVED)
+                }
+                else -> {
+                    _recordUiState.emit(RecordUiState.IDLE)
+                }
             }
+
             serviceEntity.recordState
         }
 }
@@ -45,4 +55,5 @@ class RecordViewModel @Inject constructor(
 internal sealed interface RecordUiState {
     object IDLE : RecordUiState
     object LOADING : RecordUiState
+    object SAVED : RecordUiState
 }

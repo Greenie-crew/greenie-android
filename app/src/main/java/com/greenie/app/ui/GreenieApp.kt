@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -72,6 +73,15 @@ fun GreenieApp() {
                 modifier = Modifier
                     .padding(bottom = BottomBarHeight.dp)
                     .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White,
+                                Colors.bg_light,
+                            )
+                        ),
+                        alpha = 0.4f
+                    )
             ) {
                 val titleId = getDestination(navBackStackEntry = backStackEntry)?.titleId
                 if (titleId != null) {
@@ -95,6 +105,7 @@ fun GreenieApp() {
 
                 GreenieNavHost(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .weight(1f),
                     navController = navHostController,
                     snackbarHostState = snackbarHostState,
@@ -124,7 +135,7 @@ fun GreenieApp() {
                             inclusive = false
                         }
                         launchSingleTop = true
-                        restoreState = true
+                        restoreState = false
                     }
                 },
                 currentDestination = backStackEntry?.destination

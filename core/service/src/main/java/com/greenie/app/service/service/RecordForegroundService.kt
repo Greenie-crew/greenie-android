@@ -8,16 +8,17 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE
+import com.greenie.app.common.audioanalyze.AudioRecordManager
+import com.greenie.app.common.audioanalyze.RecordFileManager
+import com.greenie.app.common.audioanalyze.TensorflowHelper
 import com.greenie.app.core.model.RecordServiceData
+import com.greenie.app.core.model.RecordServiceState
 import com.greenie.app.service.R
 import com.greenie.app.service.di.RecordServiceNotificationChannelId
-import com.greenie.app.common.audioanalyze.AudioRecordManager
-import com.greenie.app.common.audioanalyze.TensorflowHelper
-import com.greenie.app.core.model.RecordServiceState
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.BufferOverflow
@@ -45,11 +46,10 @@ class RecordForegroundService : Service() {
     lateinit var serviceNotificationChannelId: String
 
     @Inject
-    @ApplicationContext
-    lateinit var context: Context
+    lateinit var tensorflowHelper: TensorflowHelper
 
     @Inject
-    lateinit var tensorflowHelper: TensorflowHelper
+    lateinit var recordFileManager: RecordFileManager
 
     private var serviceJob: Job? = null
 
@@ -66,6 +66,7 @@ class RecordForegroundService : Service() {
         startForeground(RECORD_SERVICE_NOTIFICATION_ID, createNotification())
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             RecordServiceAction.START_RECORDING.action -> {
@@ -115,8 +116,7 @@ class RecordForegroundService : Service() {
                          */
                         audioShortBufferList.addAll(byteArray.toList())
                         if (audioShortBufferList.size > 500000) {
-                            AudioRecordManager.saveShortArrayFile(
-                                context,
+                            recordFileManager.saveShortArrayFile(
                                 pcmFileName,
                                 audioShortBufferList.toShortArray()
                             )
@@ -156,14 +156,13 @@ class RecordForegroundService : Service() {
                     }
                     AudioRecordManager.stopRecording()
                     if (audioShortBufferList.isNotEmpty()) {
-                        AudioRecordManager.saveShortArrayFile(
-                            context,
+                        recordFileManager.saveShortArrayFile(
                             pcmFileName,
                             audioShortBufferList.toShortArray()
                         )
                     }
-                    val rawFile = AudioRecordManager.getRecordFile(context, pcmFileName)
-                    val wavFile = AudioRecordManager.rawToWave(context, rawFile)
+                    val rawFile = recordFileManager.getRecordFile(pcmFileName)
+                    val wavFile = recordFileManager.rawToWave(rawFile)
                     Log.d("RecordService", "wavFile: ${wavFile.absolutePath}")
                     rawFile.delete()
                     _recordServiceDataSharedFlow.replayCache.lastOrNull()?.let { serviceData ->
@@ -175,6 +174,7 @@ class RecordForegroundService : Service() {
                             )
                         )
                     }
+                    _recordServiceDataSharedFlow.resetReplayCache()
                     stopSelf()
                     stopService(intent)
                 }

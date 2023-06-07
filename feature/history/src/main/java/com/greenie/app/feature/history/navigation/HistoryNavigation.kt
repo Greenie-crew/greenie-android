@@ -13,14 +13,12 @@ fun NavController.navigateToHistory(navOptions: NavOptionsBuilder.() -> Unit = {
 }
 
 fun NavGraphBuilder.historyScreen(
-    onNavigateToHome: () -> Unit,
     showMessage: (String) -> Unit,
 ) {
     composable(
         route = historyNavigationRoute,
     ) { _ ->
         HistoryRoute(
-            onNavigateToHome = onNavigateToHome,
             showMessage = showMessage
         )
     }

@@ -1,6 +1,7 @@
 package com.greenie.app.core.domain.repository
 
 import com.greenie.app.core.model.RecordHistoryData
+import com.greenie.app.core.model.RecordServiceData
 import kotlinx.coroutines.flow.Flow
 
 interface RecordHistoryRepo {
@@ -12,5 +13,5 @@ interface RecordHistoryRepo {
 
     fun getRecordHistoryByFileName(fileName: String): Flow<RecordHistoryData>
 
-    fun saveRecordHistory(vararg recordHistoryData: RecordHistoryData): Flow<List<Long>>
+    suspend fun saveRecordHistory(vararg recordServiceData: RecordServiceData)
 }

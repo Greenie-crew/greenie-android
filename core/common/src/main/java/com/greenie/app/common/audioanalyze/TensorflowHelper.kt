@@ -16,22 +16,22 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.inject.Inject
 
-val SPLIT_SIZE = (SAMPLE_RATE * 0.02f).toInt()
-const val DECIBEL_CUT_LINE = 20.0f
+val SPLIT_SIZE = (SAMPLE_RATE * 0.1f).toInt()
+const val DECIBEL_CUT_LINE = 39.0f
 
-const val DISPLAY_THRESHOLD = 0.7f
-const val DEFAULT_NUM_OF_RESULTS = 4
+const val CALCULATE_THRESHOLD = 0.56f
+const val DEFAULT_NUM_OF_RESULTS = 5
 const val YAMNET_MODEL = "noises_model.tflite"
 
 class TensorflowHelper @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
     private val baseOptions = BaseOptions.builder()
-        .setNumThreads(4)
+        .setNumThreads(-1)
         .useNnapi()
 
     private val options = AudioClassifier.AudioClassifierOptions.builder()
-        .setScoreThreshold(DISPLAY_THRESHOLD)
+        .setScoreThreshold(CALCULATE_THRESHOLD)
         .setMaxResults(DEFAULT_NUM_OF_RESULTS)
         .setBaseOptions(baseOptions.build())
         .build()
@@ -43,6 +43,8 @@ class TensorflowHelper @Inject constructor(
     )
 
     fun analyzeAudio(wavFile: File): Flow<Map<NoiseCategoryEnum, Int>> = flow {
+        var count = 0
+
         val resultHashMap = HashMap<NoiseCategoryEnum, Int>()
 
         val tensorAudio = audioClassifier.createInputTensorAudio()
@@ -50,6 +52,8 @@ class TensorflowHelper @Inject constructor(
         val inputStream = wavFile.inputStream()
         inputStream.skip(44)
         while (inputStream.available() > 0) {
+            count++
+
             val byteArray = ByteArray(SPLIT_SIZE * 2)
             inputStream.read(byteArray)
             val shortArray = ShortArray(SPLIT_SIZE)
@@ -71,8 +75,8 @@ class TensorflowHelper @Inject constructor(
             for (category in output[0].categories) {
                 val categoryName = NoiseCategory.findCategoryByIndex(category.index)
                 categorySet.add(categoryName)
+//                Log.d("TensorflowHelper", "$count categories0: ${output[0].categories} ${categoryName}")
             }
-            Log.d("TensorflowHelper", "categories0: ${output[0].categories} ${categorySet}")
 
             /**
              * Find category by label
@@ -80,8 +84,8 @@ class TensorflowHelper @Inject constructor(
             for (category in output[1].categories) {
                 val categoryName = NoiseCategory.findCategoryByLabel(category.label)
                 categorySet.add(categoryName)
+//                Log.d("TensorflowHelper", "$count categories1: ${output[1].categories} ${categoryName}")
             }
-            Log.d("TensorflowHelper", "categories1: ${output[1].categories} ${categorySet}")
 
             /**
              * Count category
@@ -100,7 +104,7 @@ class TensorflowHelper @Inject constructor(
             .sortedByDescending { (_, value) -> value }
             .toMap()
 
-        Log.d("TensorflowHelper", "SortedMap: ${sortedMap}")
+        Log.d("TensorflowHelper", "$count SortedMap: ${sortedMap}")
 
         emit(sortedMap)
     }.flowOn(Dispatchers.IO)
@@ -114,7 +118,7 @@ object NoiseCategory {
                 return noiseCategoryEnum
             }
         }
-        Log.e("NoiseCategory", "Unknown index: $index")
+//        Log.e("NoiseCategory", "Unknown index: $index")
         return NoiseCategoryEnum.ETC
     }
 
@@ -124,7 +128,7 @@ object NoiseCategory {
                 return noiseCategoryEnum
             }
         }
-        Log.e("NoiseCategory", "Unknown label: $label")
+//        Log.e("NoiseCategory", "Unknown label: $label")
         return NoiseCategoryEnum.ETC
     }
 
@@ -137,13 +141,12 @@ object NoiseCategory {
         HUMAN("Human", HumanList),
         FOOT_STEP("Footstep", FootStepList),
         CLASHING("Clashing", ClashingList),
-        PET("Pet", PetList),
         ANIMAL("Animal", AnimalList),
         INSTRUMENT("Instrument", InstrumentList),
         NATURE("Nature", NatureList),
         VEHICLE("Vehicle", VehicleList, VehicleLabelList),
         MACHINE("Machine", MachineList, MachineLabelList),
-        FURNITURE("Furniture", FurnitureList, FurnitureLabelList),
+        FURNITURE("Furniture", FurnitureList),
         LIVING("Living", LivingList),
         DOMESTIC("Domestic", DomesticList),
         CLASHING_HARD("Clashing (hard)", ClashingHardList, ClashingHardLabelList),
@@ -176,16 +179,16 @@ object NoiseCategory {
         "절삭기",
         "송풍기",
 //        "압축기",
-        "발전기",
+//        "발전기",
     )
-    private val FurnitureLabelList = arrayOf(
-        "가구소리",
-    )
+//    private val FurnitureLabelList = arrayOf(
+//        "가구소리",
+//    )
     private val ClashingHardLabelList = arrayOf(
 //        "공구",
 //        "항타기",
         "파쇄기",
-        "콘크리트펌프",
+//        "콘크리트펌프",
     )
 
     private val VocalList = arrayOf(
@@ -296,7 +299,7 @@ object NoiseCategory {
         474,
         478,
     )
-    private val PetList = arrayOf(
+    private val AnimalList = arrayOf(
         67,
         68,
         69,
@@ -311,8 +314,6 @@ object NoiseCategory {
         78,
         79,
         80,
-    )
-    private val AnimalList = arrayOf(
         81,
         82,
         83,
@@ -532,13 +533,13 @@ object NoiseCategory {
         291,
         292,
         293,
+        297,
         508,
     )
     private val VehicleList = arrayOf(
         294,
         295,
         296,
-        297,
         298,
         299,
         300,
@@ -584,12 +585,17 @@ object NoiseCategory {
         345,
         346,
         347,
+        398,
+        406,
+        487,
     )
     private val MachineList = arrayOf(
         340,
         341,
         342,
         343,
+        514,
+        517
     )
     private val FurnitureList = arrayOf(
         348,
@@ -684,9 +690,7 @@ object NoiseCategory {
         370,
         371,
         376,
-        398,
         405,
-        406,
         407,
         408,
         409,
@@ -726,7 +730,6 @@ object NoiseCategory {
     private val EtcList = arrayOf(
         451,
         452,
-        487,
         491,
         492,
         494,
@@ -744,10 +747,8 @@ object NoiseCategory {
         511,
         512,
         513,
-        514,
         515,
         516,
-        517,
         520,
     )
 }
