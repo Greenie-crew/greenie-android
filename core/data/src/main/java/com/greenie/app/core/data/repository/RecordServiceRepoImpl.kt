@@ -1,6 +1,6 @@
 package com.greenie.app.core.data.repository
 
-import com.greenie.app.core.data.mapper.ServiceMapper.toDomain
+import com.greenie.app.core.data.mapper.RecordMapper.toDomain
 import com.greenie.app.core.domain.entities.RecordServiceStateEntity
 import com.greenie.app.core.domain.repository.RecordServiceRepo
 import com.greenie.app.service.source.RecordServiceDataSource

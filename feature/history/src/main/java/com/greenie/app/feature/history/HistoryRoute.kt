@@ -7,10 +7,10 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +27,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabPosition
@@ -46,20 +47,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.greenie.app.core.designsystem.icon.AppIcons
+import com.greenie.app.core.designsystem.theme.AppTheme
+import com.greenie.app.core.domain.entities.RecordHistoryEntity
+import com.greenie.app.core.model.NoiseCategoryEnum
+import com.greenie.app.core.model.RecordAnalyzeData
 import com.greenie.app.core.model.RecordHistoryData
-import com.patrykandpatrick.vico.compose.chart.Chart
-import com.patrykandpatrick.vico.compose.chart.column.columnChart
-import com.patrykandpatrick.vico.compose.chart.line.lineChart
-import com.patrykandpatrick.vico.core.chart.composed.plus
-import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
-import com.patrykandpatrick.vico.core.entry.composed.plus
-import com.patrykandpatrick.vico.core.entry.entriesOf
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -116,12 +115,8 @@ internal fun HistoryScreen(
                 val indicatorLeft by transition.animateDp(
                     transitionSpec = {
                         if (initialState < targetState) {
-                            // Indicator moves to the right.
-                            // The left edge moves slower than the right edge.
                             spring(stiffness = Spring.StiffnessVeryLow)
                         } else {
-                            // Indicator moves to the left.
-                            // The left edge moves faster than the right edge.
                             spring(stiffness = Spring.StiffnessMedium)
                         }
                     },
@@ -132,12 +127,8 @@ internal fun HistoryScreen(
                 val indicatorRight by transition.animateDp(
                     transitionSpec = {
                         if (initialState < targetState) {
-                            // Indicator moves to the right
-                            // The right edge moves faster than the left edge.
                             spring(stiffness = Spring.StiffnessMedium)
                         } else {
-                            // Indicator moves to the left.
-                            // The right edge moves slower than the left edge.
                             spring(stiffness = Spring.StiffnessVeryLow)
                         }
                     },
@@ -196,12 +187,12 @@ internal fun HistoryScreen(
             state = pagerState
         ) { page ->
             when (page) {
-                0 -> ResultByDate(
+                0 -> HistoryByDateSection(
                     historyUiState = historyUiState,
                     getHistoryByDate = getHistoryByDate
                 )
 
-                1 -> ResultByTag(
+                1 -> HistoryByTag(
                     historyUiState = historyUiState
                 )
             }
@@ -210,7 +201,7 @@ internal fun HistoryScreen(
 }
 
 @Composable
-internal fun ColumnScope.ResultByDate(
+internal fun HistoryByDateSection(
     historyUiState: HistoryUiState,
     getHistoryByDate: (year: Int, month: Int) -> Unit,
 ) {
@@ -238,7 +229,7 @@ internal fun ColumnScope.ResultByDate(
         }
     }
 
-    val recordHistoryData: List<RecordHistoryData> by remember(historyUiState) {
+    val recordHistoryData: List<RecordHistoryEntity> by remember(historyUiState) {
         derivedStateOf {
             if (historyUiState is HistoryUiState.Success) {
                 historyUiState.historyList
@@ -297,75 +288,66 @@ internal fun ColumnScope.ResultByDate(
                     fontSize = 16.sp,
                 )
             )
-            if (isShowNextMonth) {
-                IconButton(
-                    modifier = Modifier,
-                    onClick = addMonth,
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .size(24.dp),
-                        imageVector = AppIcons.ArrowForward,
-                        contentDescription = "Forward",
-                        tint = Color(0xFF111111),
-                    )
+            IconButton(
+                modifier = Modifier,
+                onClick = {
+                    if (isShowNextMonth) {
+                        addMonth()
+                    }
                 }
-            } else {
-                IconButton(
-                    modifier = Modifier,
-                    onClick = {}
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .size(24.dp),
-                        imageVector = AppIcons.ArrowForward,
-                        contentDescription = "Forward",
-                        tint = Color(0xFFE5E5EC),
-                    )
-                }
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .size(24.dp),
+                    imageVector = AppIcons.ArrowForward,
+                    contentDescription = "Forward",
+                    tint = if (isShowNextMonth) {
+                        Color(0xFF111111)
+                    } else {
+                        Color(0xFFE5E5EC)
+                    },
+                )
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
-        ResultContentSection(
+        HistoryGraph(
             resultData = recordHistoryData
         )
     }
 }
 
 @Composable
-private fun ResultContentSection(
-    resultData: List<RecordHistoryData>,
+private fun HistoryItemByDate(
+    recordHistoryEntity: RecordHistoryEntity,
+    isPlaying: Boolean,
+    onClickPlay: () -> Unit,
+    onClickAnalyze: () -> Unit,
 ) {
-    val maxChartEntryModelProducer = ChartEntryModelProducer(
-        entriesOf(
-            *(resultData.map { it.maximumDecibel }.toTypedArray()),
-        ),
-    )
-    val averageChartEntryModelProducer = ChartEntryModelProducer(
-        entriesOf(
-            *(resultData.map { it.averageDecibel }.toTypedArray()),
-        ),
-    )
-    val composedChartEntryModelProducer = maxChartEntryModelProducer + averageChartEntryModelProducer
-
-    val columnChart = columnChart()
-    val lineChart = lineChart()
-
-    Chart(
+    Row(
         modifier = Modifier
-            .padding(horizontal = 17.dp)
             .fillMaxWidth()
-            .height(200.dp),
-        chart = remember(columnChart, lineChart) {
-            columnChart + lineChart
-        },
-        chartModelProducer = composedChartEntryModelProducer,
-//        bottomAxis = bottomAxis(),
-    )
+            .wrapContentHeight()
+            .clickable(onClick = onClickAnalyze),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onClickPlay) {
+            Icon(
+                modifier = Modifier
+                    .size(40.dp),
+                imageVector = if (isPlaying) {
+                        AppIcons.Play
+                    } else {
+                        AppIcons.Pause
+                    },
+                contentDescription = "Play",
+                tint = Color(0xFF111111),
+            )
+        }
+    }
 }
 
 @Composable
-internal fun ColumnScope.ResultByTag(
+internal fun HistoryByTag(
     historyUiState: HistoryUiState
 ) {
     Column(
@@ -373,5 +355,63 @@ internal fun ColumnScope.ResultByTag(
             .fillMaxSize()
     ) {
 
+    }
+}
+
+@Preview
+@Composable
+internal fun HistoryByDatePreview() {
+    AppTheme {
+        HistoryByDateSection(
+            historyUiState = HistoryUiState.Success(
+                listOf(
+                    RecordHistoryEntity(
+                        baseInfo = RecordHistoryData(
+                            fileName = "2020-11-11.wav",
+                            maximumDecibel = 100f,
+                            minimumDecibel = 100f,
+                            averageDecibel = 50f,
+                            createdAt = Calendar.getInstance().time.time,
+                        ),
+                        analyzeScore = RecordAnalyzeData(
+                            mapOf(
+                                NoiseCategoryEnum.ANIMAL to 1,
+                                NoiseCategoryEnum.VEHICLE to 2,
+                            )
+                        )
+                    )
+                )
+            ),
+            getHistoryByDate = { _, _ ->
+                // do nothing
+            }
+        )
+    }
+}
+
+@Preview
+@Composable
+internal fun HistoryItemByDatePreview() {
+    AppTheme {
+        HistoryItemByDate(
+            recordHistoryEntity = RecordHistoryEntity(
+                baseInfo = RecordHistoryData(
+                    fileName = "2020-11-11.wav",
+                    maximumDecibel = 100f,
+                    minimumDecibel = 100f,
+                    averageDecibel = 50f,
+                    createdAt = Calendar.getInstance().time.time,
+                ),
+                analyzeScore = RecordAnalyzeData(
+                    mapOf(
+                        NoiseCategoryEnum.ANIMAL to 1,
+                        NoiseCategoryEnum.VEHICLE to 2,
+                    )
+                )
+            ),
+            isPlaying = false,
+            onClickPlay = {},
+            onClickAnalyze = {}
+        )
     }
 }

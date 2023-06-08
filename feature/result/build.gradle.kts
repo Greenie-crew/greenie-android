@@ -37,6 +37,8 @@ dependencies {
     implementation(projects.core.ui)
     implementation(projects.core.model)
 
+    implementation(libs.accompanist.webview)
+
     implementation(libs.androidx.core.ktx)
 
     implementation(platform(libs.androidx.compose.bom))

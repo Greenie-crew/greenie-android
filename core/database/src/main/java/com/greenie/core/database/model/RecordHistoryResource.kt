@@ -3,6 +3,7 @@ package com.greenie.core.database.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.greenie.app.core.model.RecordAnalyzeData
 import com.greenie.app.core.model.RecordHistoryData
 import com.greenie.app.core.model.RecordServiceData
 
@@ -10,18 +11,15 @@ import com.greenie.app.core.model.RecordServiceData
     tableName = "record_history",
 )
 data class RecordHistoryResource(
-    @ColumnInfo(name = "file_name") val fileName: String,
-    @ColumnInfo(name = "minimum_decibel") val minimumDecibel: Float,
-    @ColumnInfo(name = "maximum_decibel") val maximumDecibel: Float,
+    @PrimaryKey(autoGenerate = false) val fileName: String,
+    @ColumnInfo(name = "minimumDecimal") val minimumDecibel: Float,
+    @ColumnInfo(name = "maximumDecibel") val maximumDecibel: Float,
     @ColumnInfo(name = "average_decibel") val averageDecibel: Float,
     @ColumnInfo(name = "created_at") val createdAt: Long,
-) {
-    @PrimaryKey(autoGenerate = true)
-    var id: Int = 0
-}
+    @ColumnInfo(name = "analyze_score") val analyzeScore: RecordAnalyzeData? = null,
+)
 
-fun RecordHistoryResource.asExternalModel() = RecordHistoryData(
-    id = id,
+fun RecordHistoryResource.toRecordHistoryData() = RecordHistoryData(
     fileName = fileName,
     minimumDecibel = minimumDecibel,
     maximumDecibel = maximumDecibel,
@@ -29,10 +27,11 @@ fun RecordHistoryResource.asExternalModel() = RecordHistoryData(
     createdAt = createdAt,
 )
 
-fun RecordServiceData.asRecordHistoryResource() = RecordHistoryResource(
+fun RecordHistoryData.toRecordHistoryResource() = RecordHistoryResource(
     fileName = fileName,
     minimumDecibel = minimumDecibel,
     maximumDecibel = maximumDecibel,
     averageDecibel = averageDecibel,
-    createdAt = createdTime,
+    createdAt = createdAt,
+    analyzeScore = null,
 )

@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.greenie.app.core.domain.entities.RecordHistoryEntity
 import com.greenie.app.core.domain.usecase.recordhistory.GetRecordHistoryByDate
+import com.greenie.app.core.model.RecordAnalyzeData
 import com.greenie.app.core.model.RecordHistoryData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,5 +37,5 @@ class HistoryViewModel @Inject constructor(
 
 sealed interface HistoryUiState {
     object Loading : HistoryUiState
-    data class Success(val historyList: List<RecordHistoryData>) : HistoryUiState
+    data class Success(val historyList: List<RecordHistoryEntity>) : HistoryUiState
 }

@@ -1,33 +1,32 @@
 package com.greenie.app.core.data.repository
 
+import com.greenie.app.core.data.mapper.RecordMapper.toData
+import com.greenie.app.core.data.mapper.RecordMapper.toDomain
+import com.greenie.app.core.domain.entities.RecordHistoryEntity
 import com.greenie.app.core.domain.repository.RecordHistoryRepo
-import com.greenie.app.core.model.RecordHistoryData
+import com.greenie.app.core.model.RecordAnalyzeData
 import com.greenie.app.core.model.RecordServiceData
 import com.greenie.core.database.dao.RecordHistoryDao
-import com.greenie.core.database.model.RecordHistoryResource
-import com.greenie.core.database.model.asExternalModel
-import com.greenie.core.database.model.asRecordHistoryResource
+import com.greenie.core.database.model.toRecordHistoryResource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import java.util.Calendar
 import javax.inject.Inject
 
 class RecordHistoryRepoImpl @Inject constructor(
     private val recordHistoryDao: RecordHistoryDao
 ) : RecordHistoryRepo {
-    override fun getRecordHistoryList(): Flow<List<RecordHistoryData>> {
-        return recordHistoryDao.getAll()
-            .map { resourceList ->
-                resourceList.map(RecordHistoryResource::asExternalModel)
-            }
-    }
+//    override fun getRecordHistoryList(): Flow<List<RecordHistoryData>> {
+//        return recordHistoryDao.getHistory()
+//            .map { resourceList ->
+//                resourceList.map(RecordHistoryResource::asExternalModel)
+//            }
+//    }
 
-    override fun getRecordHistoryById(recordId: Int): Flow<RecordHistoryData> = flow {
-        emit(recordHistoryDao.findById(recordId).asExternalModel())
-    }
-
-    override fun getRecordHistoryByMonth(year: Int, month: Int): Flow<List<RecordHistoryData>> =
+    override fun getRecordHistoryByDate(
+        year: Int,
+        month: Int
+    ): Flow<List<RecordHistoryEntity>> =
         flow {
             val startDate = Calendar.getInstance().apply {
                 set(Calendar.YEAR, year)
@@ -41,25 +40,29 @@ class RecordHistoryRepoImpl @Inject constructor(
                 set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
             }.timeInMillis
 
-            val data = recordHistoryDao.getAllByDateRange(
+            val data = recordHistoryDao.getHistoryByDateRange(
                 startDate = startDate,
                 endDate = endDate
             )
 
-            emit(data.map(RecordHistoryResource::asExternalModel))
+            emit(data.map { resource ->
+                resource.toDomain()
+            })
         }
 
-    override fun getRecordHistoryByFileName(fileName: String): Flow<RecordHistoryData> = flow {
-        emit(recordHistoryDao.findByFileName(fileName).asExternalModel())
-    }
-
     override suspend fun saveRecordHistory(vararg recordServiceData: RecordServiceData) {
-        recordHistoryDao.insertAll(
-            *recordServiceData.map(
-                RecordServiceData::asRecordHistoryResource
-            ).toTypedArray()
+        recordHistoryDao.insertHistory(*recordServiceData
+            .map { recordServiceItem ->
+                recordServiceItem.toData().toRecordHistoryResource()
+            }
+            .toTypedArray()
         )
     }
 
-
+    override suspend fun saveRecordAnalyze(fileName: String, recordAnalyzeData: RecordAnalyzeData) {
+        recordHistoryDao.updateAnalyze(
+            fileName = fileName,
+            recordAnalyzeData = recordAnalyzeData
+        )
+    }
 }

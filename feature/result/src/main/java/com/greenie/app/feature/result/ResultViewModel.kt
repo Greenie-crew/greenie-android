@@ -3,9 +3,10 @@ package com.greenie.app.feature.result
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.greenie.app.common.audioanalyze.NoiseCategory
 import com.greenie.app.common.audioanalyze.RecordFileManager
 import com.greenie.app.common.audioanalyze.TensorflowHelper
+import com.greenie.app.core.domain.usecase.recordhistory.SaveRecordAnalyze
+import com.greenie.app.core.model.RecordAnalyzeData
 import com.greenie.app.feature.result.navigation.ResultArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,7 +19,8 @@ import javax.inject.Inject
 class ResultViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val tensorflowHelper: TensorflowHelper,
-    private val recordFileManager: RecordFileManager
+    private val recordFileManager: RecordFileManager,
+    private val saveRecordAnalyze: SaveRecordAnalyze
 ) : ViewModel() {
 
     private val resultArgs: ResultArgs = ResultArgs(savedStateHandle)  // Record File Name
@@ -28,6 +30,7 @@ class ResultViewModel @Inject constructor(
     internal var resultUiState: StateFlow<ResultUiState> = tensorflowHelper
         .analyzeAudio(recordFileManager.getRecordFile(fileName))
         .map { analyzeResultData ->
+            saveRecordAnalyze(fileName, analyzeResultData)
             ResultUiState.LOADED(analyzeResultData)
         }
         .stateIn(
@@ -40,5 +43,5 @@ class ResultViewModel @Inject constructor(
 
 sealed interface ResultUiState {
     object LOADING : ResultUiState
-    data class LOADED(val analyzeResultData: Map<NoiseCategory.NoiseCategoryEnum, Int>) : ResultUiState
+    data class LOADED(val averageDecibel: Float, val analyzeResultData: RecordAnalyzeData) : ResultUiState
 }

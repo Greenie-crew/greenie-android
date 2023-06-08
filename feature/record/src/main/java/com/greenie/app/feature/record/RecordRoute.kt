@@ -37,9 +37,9 @@ internal fun RecordRoute(
     val recordUiState by viewModel.recordUiState.collectAsStateWithLifecycle()
     val recordServiceData by viewModel.recordServiceData.collectAsStateWithLifecycle(
         RecordServiceData(
+            serviceState = RecordServiceState.IDLE,
             fileName = "",
             createdTime = 0L,
-            serviceState = RecordServiceState.IDLE,
             decibelValue = 0f,
             minimumDecibel = 0f,
             maximumDecibel = 0f,

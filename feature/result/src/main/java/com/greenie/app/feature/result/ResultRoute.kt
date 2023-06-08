@@ -1,5 +1,10 @@
 package com.greenie.app.feature.result
 
+import android.annotation.SuppressLint
+import android.net.Uri
+import android.util.Log
+import android.webkit.JavascriptInterface
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,7 +34,11 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.google.accompanist.web.WebView
+import com.google.accompanist.web.rememberWebViewNavigator
+import com.google.accompanist.web.rememberWebViewState
 import com.greenie.app.core.designsystem.theme.AppTheme
+import com.greenie.app.core.model.RecordAnalyzeData
 
 @Composable
 internal fun ResultRoute(
@@ -40,11 +49,10 @@ internal fun ResultRoute(
 
     when (resultUiState) {
         ResultUiState.LOADING -> LoadingScreen()
-        is ResultUiState.LOADED -> {
-            Text(
-                text = "${(resultUiState as ResultUiState.LOADED).analyzeResultData}"
-            )
-        }
+        is ResultUiState.LOADED -> ResultScreen(
+            showMessage = showMessage,
+            recordAnalyzeData = (resultUiState as ResultUiState.LOADED).analyzeResultData,
+        )
     }
 }
 
@@ -123,11 +131,78 @@ internal fun LoadingScreen() {
     }
 }
 
+private const val GREENIE_WEB = "http://greenie-web.vercel.app"
+private const val AVERAGE_PARAMETER_KEY = "average"
+
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
 internal fun ResultScreen(
     showMessage: (String) -> Unit,
+    recordAnalyzeData: RecordAnalyzeData,
 ) {
+    val webViewState = rememberWebViewState(
+        Uri.parse(GREENIE_WEB)
+        .buildUpon()
+            .apply {
+                recordAnalyzeData.analyzeScoreMap.forEach {
+                    appendQueryParameter(it.key.label, it.value.toString())
+                }
+                appendQueryParameter(AVERAGE_PARAMETER_KEY, recordAnalyzeData..toString()
+            }
+        .build()
+        .toString()
+    )
+    val webViewNavigator = rememberWebViewNavigator()
+    Log.d("ResultScreen", "webViewState.url: ${webViewState.lastLoadedUrl}")
 
+    BackHandler(
+        enabled = webViewNavigator.canGoBack,
+    ) {
+        webViewNavigator.navigateBack()
+    }
+
+    WebView(
+        modifier = Modifier.fillMaxSize(),
+        state = webViewState,
+        navigator = webViewNavigator,
+        onCreated = { webView ->
+            webView.settings.apply {
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                javaScriptCanOpenWindowsAutomatically = true
+            }
+
+            webView.addJavascriptInterface(
+                ResultWebAppInterface(
+                    showMessage = showMessage,
+                    onBackPress = { webViewNavigator.navigateBack() },
+                    onNavigateToRecord = { webViewNavigator.loadUrl("http://greenie-web.vercel.app/record") },
+                ),
+                "Android"
+            )
+        },
+    )
+}
+
+class ResultWebAppInterface(
+    private val showMessage: (String) -> Unit,
+    private val onBackPress: () -> Unit,
+    private val onNavigateToRecord: () -> Unit,
+) {
+    @JavascriptInterface
+    fun showToast(toast: String) {
+        showMessage(toast)
+    }
+
+    @JavascriptInterface
+    fun onBackPress() {
+        onBackPress()
+    }
+
+    @JavascriptInterface
+    fun onNavigateToRecord() {
+        onNavigateToRecord()
+    }
 }
 
 @Preview
