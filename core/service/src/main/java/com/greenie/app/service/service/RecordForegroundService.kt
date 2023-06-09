@@ -162,6 +162,16 @@ class RecordForegroundService : Service() {
                         )
                     }
                     val rawFile = recordFileManager.getRecordFile(pcmFileName)
+                    if (rawFile == null) {
+                        _recordServiceDataSharedFlow.replayCache.lastOrNull()?.let { serviceData ->
+                            _recordServiceDataSharedFlow.emit(
+                                serviceData.copy(
+                                    serviceState = RecordServiceState.ERROR,
+                                )
+                            )
+                        }
+                        return@launch
+                    }
                     val wavFile = recordFileManager.rawToWave(rawFile)
                     Log.d("RecordService", "wavFile: ${wavFile.absolutePath}")
                     rawFile.delete()

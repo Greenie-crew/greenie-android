@@ -1,4 +1,4 @@
-package com.greenie.app.feature.menu
+package com.greenie.app.feature.home
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

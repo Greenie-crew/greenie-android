@@ -12,6 +12,7 @@ data class RecordServiceData(
 
 enum class RecordServiceState {
     IDLE,
+    ERROR,
     RECORDING,
     PAUSED,
     SAVING,

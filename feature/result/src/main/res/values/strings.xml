@@ -7,4 +7,5 @@
     <string name="result_loading_content_construction">공사할 땐 이웃에 양해 구하기</string>
 
     <string name="result_loading_title">분석중…</string>
+    <string name="result_error_message">녹음 파일이 제거되었거나, 오류가 있습니다.</string>
 </resources>

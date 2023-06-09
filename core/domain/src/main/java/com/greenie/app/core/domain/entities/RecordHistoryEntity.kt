@@ -4,6 +4,6 @@ import com.greenie.app.core.model.RecordAnalyzeData
 import com.greenie.app.core.model.RecordHistoryData
 
 data class RecordHistoryEntity(
-    val baseInfo: RecordHistoryData,
-    val analyzeScore: RecordAnalyzeData?,
+        val baseInfo: RecordHistoryData,
+        var analyzeScore: RecordAnalyzeData?,
 )

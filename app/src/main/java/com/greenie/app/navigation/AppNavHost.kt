@@ -9,7 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.greenie.app.feature.history.navigation.historyScreen
-import com.greenie.app.feature.menu.navigation.menuScreen
+import com.greenie.app.feature.home.navigation.homeScreen
 import com.greenie.app.feature.record.navigation.recordScreen
 import com.greenie.app.feature.result.navigation.navigateToResult
 import com.greenie.app.feature.result.navigation.resultScreen
@@ -26,7 +26,6 @@ internal fun GreenieNavHost(
     val coroutineScope = rememberCoroutineScope()
     val startDestination = TopLevelDestination.Menu.route
 
-    val activity = LocalContext.current as Activity
     val context = LocalContext.current
 
     NavHost(
@@ -34,7 +33,7 @@ internal fun GreenieNavHost(
         navController = navController,
         startDestination = startDestination,
     ) {
-        menuScreen (
+        homeScreen (
             showMessage = { text ->
                 snackbarHostState.showMessage(
                     coroutineScope = coroutineScope,
@@ -78,6 +77,9 @@ internal fun GreenieNavHost(
                     text = text,
                 )
             },
+            onNavigateToResult = { fileName ->
+                navController.navigateToResult(fileName)
+            },
         )
 
         resultScreen(
@@ -86,6 +88,9 @@ internal fun GreenieNavHost(
                     coroutineScope = coroutineScope,
                     text = text,
                 )
+            },
+            onNavigateBack = {
+                navController.popBackStack()
             },
         )
     }

@@ -50,6 +50,14 @@ class RecordHistoryRepoImpl @Inject constructor(
             })
         }
 
+    override fun getRecordHistoryByFileName(fileName: String): Flow<RecordHistoryEntity> = flow {
+        emit(recordHistoryDao.getHistoryByFileName(fileName).toDomain())
+    }
+
+    override suspend fun removeRecordHistoryByFileName(fileName: String) {
+        recordHistoryDao.deleteHistoryByFileName(fileName)
+    }
+
     override suspend fun saveRecordHistory(vararg recordServiceData: RecordServiceData) {
         recordHistoryDao.insertHistory(*recordServiceData
             .map { recordServiceItem ->

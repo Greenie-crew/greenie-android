@@ -37,18 +37,24 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
+import com.greenie.app.common.GREENIE_WEB_URL
 import com.greenie.app.core.designsystem.theme.AppTheme
 import com.greenie.app.core.model.RecordAnalyzeData
 
 @Composable
 internal fun ResultRoute(
     showMessage: (String) -> Unit,
+    onNavigateBack: () -> Unit,
     viewModel: ResultViewModel = hiltViewModel()
 ) {
     val resultUiState by viewModel.resultUiState.collectAsStateWithLifecycle()
 
     when (resultUiState) {
         ResultUiState.LOADING -> LoadingScreen()
+        ResultUiState.ERROR -> {
+            showMessage(stringResource(id = R.string.result_error_message))
+            onNavigateBack()
+        }
         is ResultUiState.LOADED -> ResultScreen(
             showMessage = showMessage,
             recordAnalyzeData = (resultUiState as ResultUiState.LOADED).analyzeResultData,
@@ -57,6 +63,7 @@ internal fun ResultRoute(
 }
 
 private data class LoadingContentData(val contentResId: Int, val lottieResId: Int)
+
 private val LoadingContentArray = arrayOf(
     LoadingContentData(
         contentResId = R.string.result_loading_content_music,
@@ -131,7 +138,6 @@ internal fun LoadingScreen() {
     }
 }
 
-private const val GREENIE_WEB = "http://greenie-web.vercel.app"
 private const val AVERAGE_PARAMETER_KEY = "average"
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -141,16 +147,19 @@ internal fun ResultScreen(
     recordAnalyzeData: RecordAnalyzeData,
 ) {
     val webViewState = rememberWebViewState(
-        Uri.parse(GREENIE_WEB)
-        .buildUpon()
+        Uri.parse(GREENIE_WEB_URL)
+            .buildUpon()
             .apply {
+                appendQueryParameter(
+                    AVERAGE_PARAMETER_KEY,
+                    recordAnalyzeData.averageDecibel.toString()
+                )
                 recordAnalyzeData.analyzeScoreMap.forEach {
                     appendQueryParameter(it.key.label, it.value.toString())
                 }
-                appendQueryParameter(AVERAGE_PARAMETER_KEY, recordAnalyzeData..toString()
             }
-        .build()
-        .toString()
+            .build()
+            .toString()
     )
     val webViewNavigator = rememberWebViewNavigator()
     Log.d("ResultScreen", "webViewState.url: ${webViewState.lastLoadedUrl}")

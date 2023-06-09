@@ -25,6 +25,7 @@ fun NavController.navigateToResult(fileName: String, navOptions: NavOptionsBuild
 
 fun NavGraphBuilder.resultScreen(
     showMessage: (String) -> Unit,
+    onNavigateBack: () -> Unit,
 ) {
     composable(
         route = "$resultNavigationRoute/{$resultRecordFileNameArg}",
@@ -36,6 +37,7 @@ fun NavGraphBuilder.resultScreen(
     ) { _ ->
         ResultRoute(
             showMessage = showMessage,
+            onNavigateBack = onNavigateBack,
         )
     }
 }

@@ -25,7 +25,11 @@ class RecordFileManager @Inject constructor(
         return file
     }
 
-    fun getRecordFile(fileName: String): File {
+    fun getRecordFile(fileName: String): File? {
+        val file = File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), fileName)
+        if (!file.exists()) {
+            return null
+        }
         return File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), fileName)
     }
 

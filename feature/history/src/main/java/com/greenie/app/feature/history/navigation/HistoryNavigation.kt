@@ -14,12 +14,14 @@ fun NavController.navigateToHistory(navOptions: NavOptionsBuilder.() -> Unit = {
 
 fun NavGraphBuilder.historyScreen(
     showMessage: (String) -> Unit,
+    onNavigateToResult: (fileName: String) -> Unit,
 ) {
     composable(
         route = historyNavigationRoute,
     ) { _ ->
         HistoryRoute(
-            showMessage = showMessage
+            showMessage = showMessage,
+            onNavigateToResult = onNavigateToResult,
         )
     }
 }

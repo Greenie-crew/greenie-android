@@ -1,4 +1,4 @@
-package com.greenie.app.feature.menu
+package com.greenie.app.feature.home
 
 import org.junit.Test
 

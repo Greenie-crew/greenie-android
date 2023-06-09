@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.greenie.app.common.audioanalyze.AudioRecordManager.SAMPLE_RATE
 import com.greenie.app.core.model.NoiseCategoryEnum
-import com.greenie.app.core.model.RecordAnalyzeData
 import com.greenie.app.core.model.findCategoryByIndex
 import com.greenie.app.core.model.findCategoryByLabel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -45,7 +44,7 @@ class TensorflowHelper @Inject constructor(
         options
     )
 
-    fun analyzeAudio(wavFile: File): Flow<RecordAnalyzeData> = flow {
+    fun analyzeAudio(wavFile: File): Flow<Map<NoiseCategoryEnum, Int>> = flow {
         var count = 0
 
         val resultHashMap = HashMap<NoiseCategoryEnum, Int>()
@@ -109,6 +108,6 @@ class TensorflowHelper @Inject constructor(
 
         Log.d("TensorflowHelper", "$count SortedMap: ${sortedMap}")
 
-        emit(RecordAnalyzeData(sortedMap))
+        emit(sortedMap)
     }.flowOn(Dispatchers.IO)
 }

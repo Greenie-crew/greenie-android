@@ -11,7 +11,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.greenie.app.feature.menu"
+    namespace = "com.greenie.app.feature.home"
     compileSdk = 33
 
     defaultConfig {
