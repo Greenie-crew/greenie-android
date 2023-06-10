@@ -9,11 +9,19 @@ import kotlinx.coroutines.flow.flow
 import kotlin.math.log10
 import kotlin.math.sqrt
 
+const val DECIBEL_ADJUSTMENT = 5.0f
+
 object AudioRecordManager {
     // for raw audio, use MediaRecorder.AudioSource.UNPROCESSED, see note in MediaRecorder section
     private const val AUDIO_SOURCE = MediaRecorder.AudioSource.MIC
 
-    private val SAMPLE_RATE_LIST = arrayOf(44100, 22050, 16000, 11025, 8000)
+    private val SAMPLE_RATE_LIST = arrayOf(
+//        44100,
+//        22050,
+        16000,
+        11025,
+        8000
+    )
     val SAMPLE_RATE = SAMPLE_RATE_LIST.find { sampleRate ->
         AudioRecord.getMinBufferSize(
             sampleRate,
@@ -25,7 +33,8 @@ object AudioRecordManager {
     }
     private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
     private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
-    internal val BUFFER_SIZE_RECORDING = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
+    internal val BUFFER_SIZE_RECORDING =
+        AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
     private val SHORT_BUFFER_SIZE = BUFFER_SIZE_RECORDING / 2
 
     private var audioRecord: AudioRecord? = null
@@ -73,6 +82,6 @@ object AudioRecordManager {
             sum += buffer[i] * buffer[i]
         }
         val rms = sqrt(sum / buffer.size)
-        return 20 * log10(rms)
+        return 20 * log10(rms) + DECIBEL_ADJUSTMENT
     }
 }
