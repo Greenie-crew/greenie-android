@@ -10,20 +10,20 @@ enum class NoiseCategoryEnum(
         val indexArray: Array<Int>,
         val labelArray: Array<String>? = null
 ) {
-    VOCAL("vocal", VocalList),//
+    VOCAL("vocal", VocalList),
     HUMAN("human", HumanList),
-    FOOT_STEP("footstep", FootStepList),//
-    CLASHING("clashing", ClashingList, ClashingLabelList),//
-    ANIMAL("animal", AnimalList),//
-    INSTRUMENT("instrument", InstrumentList),//
-    NATURE("nature", NatureList),//
-    VEHICLE("vehicle", VehicleList, VehicleLabelList),//
-    MACHINE("machine", MachineList, MachineLabelList),//
-    FURNITURE("furniture", FurnitureList),//
-    LIVING("living", LivingList),//
+    FOOT_STEP("footstep", FootStepList),
+    CLASHING("clashing", ClashingList, ClashingLabelList),
+    ANIMAL("animal", AnimalList),
+    INSTRUMENT("instrument", InstrumentList),
+    NATURE("nature", NatureList),
+    VEHICLE("vehicle", VehicleList, VehicleLabelList),
+    MACHINE("machine", MachineList, MachineLabelList),
+    FURNITURE("furniture", FurnitureList),
+    LIVING("living", LivingList),
     DOMESTIC("domestic", DomesticList),
-    EXPLOSION("explosion", ExplosionList),//
-    ETC("etc", EtcList), //
+    EXPLOSION("explosion", ExplosionList),
+    ETC("etc", EtcList),
 }
 
 //    private val FootStepLabelList = arrayOf(
@@ -569,6 +569,9 @@ private val LivingList = arrayOf(
         486,
         488,
         489,
+        500,
+        501,
+        502,
 )
 private val DomesticList = arrayOf(
         362,
@@ -606,9 +609,6 @@ private val EtcList = arrayOf(
         494,
         495,
         431,
-        500,
-        501,
-        502,
         503,
         504,
         505,

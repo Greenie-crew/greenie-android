@@ -70,10 +70,12 @@ dependencies {
     implementation(projects.core.designsystem)
     implementation(projects.core.ui)
     implementation(projects.core.service)
-    implementation(projects.feature.menu)
+    implementation(projects.feature.home)
     implementation(projects.feature.record)
     implementation(projects.feature.history)
     implementation(projects.feature.result)
+    implementation(projects.feature.tracking)
+    implementation(projects.feature.web)
 
     implementation(libs.accompanist.permissions)
 

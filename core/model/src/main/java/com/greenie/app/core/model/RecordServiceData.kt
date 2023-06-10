@@ -2,6 +2,7 @@ package com.greenie.app.core.model
 
 data class RecordServiceData(
     val serviceState: RecordServiceState,
+//    val mode: RecordServiceMode,
     val fileName: String,
     val createdTime: Long,
     val decibelValue: Float,
@@ -18,3 +19,8 @@ enum class RecordServiceState {
     SAVING,
     SAVED,
 }
+
+//enum class RecordServiceMode {
+//    GENERAL,
+//    TRACKING,
+//}

@@ -23,7 +23,7 @@ class ResultViewModel @Inject constructor(
 
     private val fileName: String = resultArgs.fileName
 
-    internal var resultUiState: StateFlow<ResultUiState> = getRecordAnalyze(fileName)
+    var resultUiState: StateFlow<ResultUiState> = getRecordAnalyze(fileName)
             .map { analyzeResultData ->
                 if (analyzeResultData == null) {
                     return@map ResultUiState.ERROR

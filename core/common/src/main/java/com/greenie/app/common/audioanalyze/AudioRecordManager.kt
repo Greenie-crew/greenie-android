@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlin.math.log10
@@ -40,7 +41,7 @@ object AudioRecordManager {
     private var audioRecord: AudioRecord? = null
 
     @SuppressLint("MissingPermission")
-    fun startRecording(): Flow<ShortArray> = flow {
+    fun startRecording(delay: Long = 0L): Flow<ShortArray> = flow {
         audioRecord = AudioRecord(
             AUDIO_SOURCE,
             SAMPLE_RATE,
@@ -61,6 +62,7 @@ object AudioRecordManager {
         }
 
         while (audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+            delay(delay)
             audioRecord?.read(shortBuffer, 0, SHORT_BUFFER_SIZE, AudioRecord.READ_BLOCKING)
             emit(shortBuffer)
         }

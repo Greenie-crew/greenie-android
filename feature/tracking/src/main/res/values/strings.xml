@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tracking_title">소음 트래킹 검사</string>
+
+    <string name="tracking_agreement_battery">배터리가 충분한지 확인해 주세요!</string>
+    <string name="tracking_agreement_battery_description">총 3시간 동안 검사를 진행하여 배터리 소모가 평소에 비해 클 수 있습니다.</string>
+    <string name="tracking_agreement_record">소음 데시벨만 측정하니 안심하세요!</string>
+    <string name="tracking_agreement_record_description">검사 중 마이크 기능이 켜져 있지만 데시벨만 측정하니 걱정 마세요.</string>
+    <string name="tracking_agreement_kill">검사 중엔 앱 강제 종료하지 말아주세요!</string>
+    <string name="tracking_agreement_kill_description">강제 종료 시 검사에 오류가 발생할 수 있어 일시정지나 취소하기를 선택해 주세요.</string>
+    <string name="tracking_agreement_daily">데일리 루틴 측정할 때 더 실효성이 있어요!</string>
+    <string name="tracking_agreement_daily_description">새로운 장소를 방문할 때보다 평상시 생활 소음을 검사하는 것이 데이터 분석에 더 용이해요.</string>
+</resources>

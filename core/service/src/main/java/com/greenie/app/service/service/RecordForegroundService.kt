@@ -59,6 +59,12 @@ class RecordForegroundService : Service() {
     private val pcmFileName = "$fileName.pcm"
     private val wavFileName = "$fileName.wav"
 
+    private var minimumDecibel = 0f
+    private var maximumDecibel = 0f
+    private var averageDecibel = 0f
+    private var decibelTotal = 0f
+    private var decibelCount = 0
+
     private val audioShortBufferList = mutableListOf<Short>()
 
     override fun onCreate() {
@@ -79,11 +85,10 @@ class RecordForegroundService : Service() {
                     val initialValue = audioRecordDataflow.first()
 
                     var decibelValue = AudioRecordManager.calculateDecibel(initialValue).toFloat()
-                    var minimumDecibel = decibelValue
-                    var maximumDecibel = decibelValue
-                    var averageDecibel: Float
-                    var decibelTotal = 0f
-                    var decibelCount = 0
+                    minimumDecibel = decibelValue
+                    maximumDecibel = decibelValue
+                    decibelTotal = 0f
+                    decibelCount = 0
 
                     audioRecordDataflow.collectLatest { byteArray ->
                         /**
@@ -228,7 +233,6 @@ class RecordForegroundService : Service() {
             .build()
 
     companion object {
-        private var serviceState: RecordServiceUiState = RecordServiceUiState.Idle
         private val _recordServiceDataSharedFlow = MutableSharedFlow<RecordServiceData>(
             replay = 1,
             onBufferOverflow = BufferOverflow.DROP_OLDEST
@@ -241,7 +245,6 @@ class RecordForegroundService : Service() {
         }
 
         fun startRecordService(context: Context) {
-            serviceState = RecordServiceUiState.Recording
             val pendingIntent = RecordServiceIntent(context).apply {
                 action = RecordServiceAction.START_RECORDING.action
             }
@@ -254,7 +257,6 @@ class RecordForegroundService : Service() {
         }
 
         fun pauseRecordService(context: Context) {
-            serviceState = RecordServiceUiState.Paused
             val pendingIntent = RecordServiceIntent(context).apply {
                 action = RecordServiceAction.PAUSE_RECORDING.action
             }
@@ -263,7 +265,6 @@ class RecordForegroundService : Service() {
         }
 
         fun stopRecordService(context: Context) {
-            serviceState = RecordServiceUiState.Idle
             val pendingIntent = RecordServiceIntent(context).apply {
                 action = RecordServiceAction.SAVE_RECORDING.action
             }
@@ -272,7 +273,6 @@ class RecordForegroundService : Service() {
         }
 
         fun saveRecord(context: Context) {
-            serviceState = RecordServiceUiState.Saving
             val pendingIntent = RecordServiceIntent(context).apply {
                 action = RecordServiceAction.SAVE_RECORDING.action
             }
@@ -280,22 +280,6 @@ class RecordForegroundService : Service() {
             context.startService(pendingIntent)
         }
     }
-}
-
-sealed interface RecordServiceUiState {
-    object Idle : RecordServiceUiState
-    object Recording : RecordServiceUiState
-    object Paused : RecordServiceUiState
-    object Analyzing : RecordServiceUiState
-    object Saving : RecordServiceUiState
-}
-
-private enum class RecordTime(val time: Long) {
-    TRACKING(10800000L),
-}
-
-private enum class RecordDelay(val delay: Long) {
-    TRACKING(1000L),
 }
 
 private enum class RecordServiceAction(val action: String) {

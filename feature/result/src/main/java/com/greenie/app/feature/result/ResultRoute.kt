@@ -1,10 +1,6 @@
 package com.greenie.app.feature.result
 
-import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Log
-import android.webkit.JavascriptInterface
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,8 +12,11 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
@@ -29,36 +28,63 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.google.accompanist.web.WebView
-import com.google.accompanist.web.rememberWebViewNavigator
-import com.google.accompanist.web.rememberWebViewState
 import com.greenie.app.common.GREENIE_WEB_URL
 import com.greenie.app.core.designsystem.theme.AppTheme
-import com.greenie.app.core.model.RecordAnalyzeData
+import kotlinx.coroutines.flow.collectLatest
+
+private const val AVERAGE_PARAMETER_KEY = "average"
 
 @Composable
 internal fun ResultRoute(
     showMessage: (String) -> Unit,
     onNavigateBack: () -> Unit,
+    onNavigateToWeb: (String) -> Unit,
     viewModel: ResultViewModel = hiltViewModel()
 ) {
-    val resultUiState by viewModel.resultUiState.collectAsStateWithLifecycle()
+    val errorMessage = stringResource(id = R.string.result_error_message)
 
-    when (resultUiState) {
-        ResultUiState.LOADING -> LoadingScreen()
-        ResultUiState.ERROR -> {
-            showMessage(stringResource(id = R.string.result_error_message))
-            onNavigateBack()
+    var showLoading by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.resultUiState.collectLatest { resultUiState ->
+            showLoading = false
+
+            when (resultUiState) {
+                is ResultUiState.ERROR -> {
+                    showMessage(errorMessage)
+                    onNavigateBack()
+                }
+                is ResultUiState.LOADED -> {
+                    onNavigateToWeb(
+                        Uri.parse(GREENIE_WEB_URL)
+                            .buildUpon()
+                            .apply {
+                                val resultData = resultUiState.analyzeResultData
+                                appendQueryParameter(
+                                    AVERAGE_PARAMETER_KEY,
+                                    resultData.averageDecibel.toString()
+                                )
+                                resultData.analyzeScoreMap.forEach {
+                                    appendQueryParameter(it.key.label, it.value.toString())
+                                }
+                            }
+                            .build()
+                            .toString(),
+                    )
+                }
+                else -> {
+                    showLoading = true
+                }
+            }
         }
-        is ResultUiState.LOADED -> ResultScreen(
-            showMessage = showMessage,
-            recordAnalyzeData = (resultUiState as ResultUiState.LOADED).analyzeResultData,
-        )
+    }
+
+    if (showLoading) {
+        LoadingScreen()
     }
 }
 
@@ -135,82 +161,6 @@ internal fun LoadingScreen() {
                 fontWeight = FontWeight.Medium,
             )
         }
-    }
-}
-
-private const val AVERAGE_PARAMETER_KEY = "average"
-
-@SuppressLint("SetJavaScriptEnabled")
-@Composable
-internal fun ResultScreen(
-    showMessage: (String) -> Unit,
-    recordAnalyzeData: RecordAnalyzeData,
-) {
-    val webViewState = rememberWebViewState(
-        Uri.parse(GREENIE_WEB_URL)
-            .buildUpon()
-            .apply {
-                appendQueryParameter(
-                    AVERAGE_PARAMETER_KEY,
-                    recordAnalyzeData.averageDecibel.toString()
-                )
-                recordAnalyzeData.analyzeScoreMap.forEach {
-                    appendQueryParameter(it.key.label, it.value.toString())
-                }
-            }
-            .build()
-            .toString()
-    )
-    val webViewNavigator = rememberWebViewNavigator()
-    Log.d("ResultScreen", "webViewState.url: ${webViewState.lastLoadedUrl}")
-
-    BackHandler(
-        enabled = webViewNavigator.canGoBack,
-    ) {
-        webViewNavigator.navigateBack()
-    }
-
-    WebView(
-        modifier = Modifier.fillMaxSize(),
-        state = webViewState,
-        navigator = webViewNavigator,
-        onCreated = { webView ->
-            webView.settings.apply {
-                javaScriptEnabled = true
-                domStorageEnabled = true
-                javaScriptCanOpenWindowsAutomatically = true
-            }
-
-            webView.addJavascriptInterface(
-                ResultWebAppInterface(
-                    showMessage = showMessage,
-                    onBackPress = { webViewNavigator.navigateBack() },
-                    onNavigateToRecord = { webViewNavigator.loadUrl("http://greenie-web.vercel.app/record") },
-                ),
-                "Android"
-            )
-        },
-    )
-}
-
-class ResultWebAppInterface(
-    private val showMessage: (String) -> Unit,
-    private val onBackPress: () -> Unit,
-    private val onNavigateToRecord: () -> Unit,
-) {
-    @JavascriptInterface
-    fun showToast(toast: String) {
-        showMessage(toast)
-    }
-
-    @JavascriptInterface
-    fun onBackPress() {
-        onBackPress()
-    }
-
-    @JavascriptInterface
-    fun onNavigateToRecord() {
-        onNavigateToRecord()
     }
 }
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_navigation_label">메뉴</string>
+
+    <string name="home_record_button_title">소음 측정하기</string>
+    <string name="home_record_button_description">방금 그 소음, 어디서 나온 거지? 소음의 원인을 분석해 보세요!</string>
+    <string name="home_tracking_button_title">소음 트래킹 검사</string>
+    <string name="home_tracking_button_description">요즘 주변이 좀 시끄러운 것 같은데? 80dB 이상의 소음이 몇 번이나 났을까 검사해 보세요!</string>
+    <string name="home_tip_button_title">층간 소음 줄이기</string>
+    <string name="home_tip_button_description">나와 이웃을 위한 층간 소음 줄이는 방법</string>
+    <string name="home_counsel_button_title">상담 신청</string>
+    <string name="home_counsel_button_description">층간 소음 상담소에 상담 신청하기</string>
+    <string name="home_health_button_title">건강 챙기기</string>
+    <string name="home_health_button_description">소음으로부터 피로해진 청력 및 정신 건강 회복</string>
+    <string name="home_shop_button_title">소음 방지 제품</string>
+    <string name="home_shop_button_description">나와 이웃을 위한 배려 제품 추천!</string>
+</resources>

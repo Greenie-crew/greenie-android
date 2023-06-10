@@ -125,7 +125,7 @@ fun GreenieApp() {
                             inclusive = false
                         }
                         launchSingleTop = true
-                        restoreState = true
+                        restoreState = false
                     }
                 },
                 onClickFab = {
