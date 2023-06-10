@@ -17,8 +17,14 @@ import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.inject.Inject
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
 
-val SPLIT_SIZE = (SAMPLE_RATE * 0.1f).toInt()
+const val SPLIT_TIME = 0.1f
+const val SKIP_TIME = 0.7f
+val SPLIT_SHORT_SIZE = (SAMPLE_RATE * SPLIT_TIME).toInt()
+val SPLIT_BYTE_SIZE = SPLIT_SHORT_SIZE * 2
+val SKIP_BYTE_SIZE = (SAMPLE_RATE * SKIP_TIME).toInt() * 2
 const val DECIBEL_CUT_LINE = 39.0f
 
 const val CALCULATE_THRESHOLD = 0.56f
@@ -44,70 +50,88 @@ class TensorflowHelper @Inject constructor(
         options
     )
 
+    @OptIn(ExperimentalTime::class)
     fun analyzeAudio(wavFile: File): Flow<Map<NoiseCategoryEnum, Int>> = flow {
         var count = 0
 
-        val resultHashMap = HashMap<NoiseCategoryEnum, Int>()
+        val duration = measureTimedValue {
+            val resultHashMap = HashMap<NoiseCategoryEnum, Int>()
 
-        val tensorAudio = audioClassifier.createInputTensorAudio()
+            val tensorAudio = audioClassifier.createInputTensorAudio()
 
-        val inputStream = wavFile.inputStream()
-        inputStream.skip(44)
-        while (inputStream.available() > 0) {
-            count++
+            val inputStream = wavFile.inputStream()
+            inputStream.skip(44)
+            while (inputStream.available() > 0) {
+                count++
 
-            val byteArray = ByteArray(SPLIT_SIZE * 2)
-            inputStream.read(byteArray)
-            val shortArray = ShortArray(SPLIT_SIZE)
-            ByteBuffer.wrap(byteArray).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer()
-                .get(shortArray)
+                val byteArray = ByteArray(SPLIT_BYTE_SIZE)
+                inputStream.read(byteArray)
+                inputStream.skip(SKIP_BYTE_SIZE.toLong())
+                val shortArray = ShortArray(SPLIT_SHORT_SIZE)
+                ByteBuffer.wrap(byteArray).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer()
+                    .get(shortArray)
 
-            if (AudioRecordManager.calculateDecibel(shortArray) < DECIBEL_CUT_LINE) {
-                continue
-            }
+                if (AudioRecordManager.calculateDecibel(shortArray) < DECIBEL_CUT_LINE) {
+                    continue
+                }
 
-            tensorAudio.load(shortArray, 0, shortArray.size)
-            val output = audioClassifier.classify(tensorAudio)
+                tensorAudio.load(shortArray, 0, shortArray.size)
+                val output = audioClassifier.classify(tensorAudio)
 
-            /**
-             * Find category by index
-             */
-            val categorySet = HashSet<NoiseCategoryEnum>()
+                /**
+                 * Find category by index
+                 */
+                /**
+                 * Find category by index
+                 */
+                val categorySet = HashSet<NoiseCategoryEnum>()
 
-            for (category in output[0].categories) {
-                val categoryName = findCategoryByIndex(category.index)
-                categorySet.add(categoryName)
+                for (category in output[0].categories) {
+                    val categoryName = findCategoryByIndex(category.index)
+                    categorySet.add(categoryName)
 //                Log.d("TensorflowHelper", "$count categories0: ${output[0].categories} ${categoryName}")
-            }
+                }
 
-            /**
-             * Find category by label
-             */
-            for (category in output[1].categories) {
-                val categoryName = findCategoryByLabel(category.label)
-                categorySet.add(categoryName)
+                /**
+                 * Find category by label
+                 */
+
+                /**
+                 * Find category by label
+                 */
+                for (category in output[1].categories) {
+                    val categoryName = findCategoryByLabel(category.label)
+                    categorySet.add(categoryName)
 //                Log.d("TensorflowHelper", "$count categories1: ${output[1].categories} ${categoryName}")
-            }
+                }
 
-            /**
-             * Count category
-             */
-            for (category in categorySet) {
-                if (resultHashMap.containsKey(category)) {
-                    resultHashMap[category] = resultHashMap[category]!! + 1
-                } else {
-                    resultHashMap[category] = 1
+                /**
+                 * Count category
+                 */
+
+                /**
+                 * Count category
+                 */
+                for (category in categorySet) {
+                    if (resultHashMap.containsKey(category)) {
+                        resultHashMap[category] = resultHashMap[category]!! + 1
+                    } else {
+                        resultHashMap[category] = 1
+                    }
                 }
             }
+
+            val valueSum = resultHashMap.values.sum()
+            val sortedMap = resultHashMap
+                .mapValues { (_, value) -> value * 100 / valueSum }
+                .toList()
+                .sortedByDescending { (_, value) -> value }
+                .toMap()
+
+            Log.d("TensorflowHelper", "SortedMap: $sortedMap")
+
+            emit(sortedMap)
         }
-
-        val sortedMap = resultHashMap
-            .toList()
-            .sortedByDescending { (_, value) -> value }
-            .toMap()
-
-        Log.d("TensorflowHelper", "$count SortedMap: ${sortedMap}")
-
-        emit(sortedMap)
-    }.flowOn(Dispatchers.IO)
+        Log.d("TensorflowHelper", "${count * (SKIP_TIME + SPLIT_TIME)}초간 녹음, Elapsed time: ${duration.duration.inWholeSeconds}초")
+    }.flowOn(Dispatchers.Default)
 }
