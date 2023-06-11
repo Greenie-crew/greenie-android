@@ -25,11 +25,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -66,6 +68,7 @@ import com.greenie.app.core.domain.entities.RecordHistoryEntity
 import com.greenie.app.core.model.NoiseCategoryEnum
 import com.greenie.app.core.model.RecordAnalyzeData
 import com.greenie.app.core.model.RecordHistoryData
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -190,7 +193,7 @@ internal fun HistoryScreen(
 
         HorizontalPager(
             pageCount = rowList.size,
-            state = pagerState
+            state = pagerState,
         ) { page ->
             when (page) {
                 0 -> HistoryByDateSection(
@@ -265,6 +268,18 @@ internal fun HistoryByDateSection(
         selectedTime = calendar.time
     }
 
+    val lazyListState = rememberLazyListState()
+    var graphScrollBy by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(lazyListState.firstVisibleItemIndex) {
+        delay(100L)
+        if (historyUiStateData.recordHistoryList.isEmpty()) {
+            return@LaunchedEffect
+        }
+        graphScrollBy =
+            lazyListState.firstVisibleItemIndex / historyUiStateData.recordHistoryList.size.toFloat()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -278,7 +293,6 @@ internal fun HistoryByDateSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                modifier = Modifier,
                 onClick = minusMonth,
             ) {
                 Icon(
@@ -317,22 +331,19 @@ internal fun HistoryByDateSection(
                 )
             }
         }
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            Spacer(modifier = Modifier.height(24.dp))
-            HistoryGraph(
-                resultData = historyUiStateData.recordHistoryList
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            HistoryList(
-                historyUiStateData = historyUiStateData,
-                onClickPlay = onClickPlay,
-                onClickShowAnalyze = onClickShowAnalyze,
-            )
-        }
+        Spacer(modifier = Modifier.height(24.dp))
+        HistoryGraph(
+            resultData = historyUiStateData.recordHistoryList,
+            scrollTarget = graphScrollBy,
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+
+        HistoryList(
+            historyUiStateData = historyUiStateData,
+            onClickPlay = onClickPlay,
+            onClickShowAnalyze = onClickShowAnalyze,
+            lazyListState = lazyListState,
+        )
     }
 }
 
@@ -340,28 +351,30 @@ internal fun HistoryByDateSection(
 internal fun HistoryList(
     historyUiStateData: HistoryUiStateData,
     onClickPlay: (RecordHistoryEntity) -> Unit,
-    onClickShowAnalyze: (RecordHistoryEntity) -> Unit
+    onClickShowAnalyze: (RecordHistoryEntity) -> Unit,
+    lazyListState: LazyListState,
 ) {
-    Column(
+    LazyColumn(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        state = lazyListState,
     ) {
-        historyUiStateData.recordHistoryList.forEachIndexed { index, recordHistoryEntity ->
+        items(
+            historyUiStateData.recordHistoryList,
+            key = { it.baseInfo.fileName }) { recordHistoryEntity ->
             HistoryItemByDate(
                 recordHistoryEntity = recordHistoryEntity,
                 isPlaying = historyUiStateData.currentPlayingFileName == recordHistoryEntity.baseInfo.fileName,
                 onClickPlay = onClickPlay,
                 onClickShowAnalyze = onClickShowAnalyze
             )
-            if (index != historyUiStateData.recordHistoryList.size - 1) {
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp),
-                    color = Colors.line_light,
-                    thickness = 1.dp
-                )
-            }
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp),
+                color = Colors.line_light,
+                thickness = 1.dp
+            )
         }
     }
 }
@@ -393,11 +406,9 @@ private fun HistoryItemByDate(
         modifier = Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .clickable(
-                onClick = {
-                    onClickShowAnalyze(recordHistoryEntity)
-                }
-            )
+            .clickable {
+                onClickShowAnalyze(recordHistoryEntity)
+            }
             .padding(horizontal = 16.dp, vertical = 24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
