@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flow
 import kotlin.math.log10
 import kotlin.math.sqrt
 
-const val DECIBEL_ADJUSTMENT = 5.0f
+const val DECIBEL_ADJUSTMENT = 0.0f
 
 object AudioRecordManager {
     // for raw audio, use MediaRecorder.AudioSource.UNPROCESSED, see note in MediaRecorder section

@@ -40,8 +40,8 @@ import com.greenie.app.core.domain.usecase.service.ServiceState
 
 const val BANNER_URL = "https://youtu.be/alI91xtwELU"
 const val TIP_URL = "$GREENIE_WEB_URL/solution"
-const val COUNSEL_URL = "$GREENIE_WEB_URL/mental_hearing_health"
-const val HEALTH_URL = "$GREENIE_WEB_URL/health"
+const val COUNSEL_URL = "$GREENIE_WEB_URL/complaint_apply"
+const val HEALTH_URL = "$GREENIE_WEB_URL/mental_hearing_health"
 const val SHOP_URL = "$GREENIE_WEB_URL/product"
 
 @Composable
