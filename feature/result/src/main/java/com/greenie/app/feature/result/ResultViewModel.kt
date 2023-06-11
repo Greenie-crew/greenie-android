@@ -3,8 +3,8 @@ package com.greenie.app.feature.result
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.greenie.app.core.domain.entities.RecordHistoryEntity
 import com.greenie.app.core.domain.usecase.recordhistory.GetRecordAnalyze
-import com.greenie.app.core.model.RecordAnalyzeData
 import com.greenie.app.feature.result.navigation.ResultArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,11 +24,11 @@ class ResultViewModel @Inject constructor(
     private val fileName: String = resultArgs.fileName
 
     var resultUiState: StateFlow<ResultUiState> = getRecordAnalyze(fileName)
-            .map { analyzeResultData ->
-                if (analyzeResultData == null) {
+            .map { recordHistoryEntity ->
+                if (recordHistoryEntity == null) {
                     return@map ResultUiState.ERROR
                 }
-                ResultUiState.LOADED(analyzeResultData)
+                ResultUiState.LOADED(recordHistoryEntity)
             }
             .stateIn(
                     scope = viewModelScope,
@@ -40,5 +40,5 @@ class ResultViewModel @Inject constructor(
 sealed interface ResultUiState {
     object LOADING : ResultUiState
     object ERROR : ResultUiState
-    data class LOADED(val analyzeResultData: RecordAnalyzeData) : ResultUiState
+    data class LOADED(val recordHistoryEntity: RecordHistoryEntity) : ResultUiState
 }

@@ -1,8 +1,6 @@
 package com.greenie.app.core.model
 
 data class RecordAnalyzeData(
-        val fileName: String,
-        val averageDecibel: Float,
         val analyzeScoreMap: Map<NoiseCategoryEnum, Int>
 )
 

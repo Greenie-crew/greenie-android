@@ -67,14 +67,14 @@ internal fun ResultRoute(
                         Uri.parse(GREENIE_WEB_URL)
                             .buildUpon()
                             .apply {
-                                val resultData = resultUiState.analyzeResultData
+                                val resultData = resultUiState.recordHistoryEntity
                                 appendQueryParameter(UUID_PARAMETER_KEY, UUID)
-                                appendQueryParameter(FILENAME_PARAMETER_KEY, resultData.fileName)
+                                appendQueryParameter(FILENAME_PARAMETER_KEY, resultData.baseInfo.fileName)
                                 appendQueryParameter(
                                     AVERAGE_PARAMETER_KEY,
-                                    resultData.averageDecibel.toString()
+                                    resultData.baseInfo.averageDecibel.toString()
                                 )
-                                resultData.analyzeScoreMap.forEach {
+                                resultData.analyzeScore?.analyzeScoreMap?.forEach {
                                     appendQueryParameter(it.key.label, it.value.toString())
                                 }
                             }

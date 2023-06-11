@@ -74,8 +74,6 @@ internal fun HistoryGraphPreview() {
                     createdAt = Calendar.getInstance().time.time,
                 ),
                 analyzeScore = RecordAnalyzeData(
-                    "",
-                    30f,
                     mapOf(
                         NoiseCategoryEnum.ANIMAL to 1,
                         NoiseCategoryEnum.VEHICLE to 2,
@@ -91,8 +89,6 @@ internal fun HistoryGraphPreview() {
                     createdAt = Calendar.getInstance().time.time,
                 ),
                 analyzeScore = RecordAnalyzeData(
-                    "",
-                    30f,
                     mapOf(
                         NoiseCategoryEnum.ANIMAL to 1,
                         NoiseCategoryEnum.VEHICLE to 2,
@@ -108,8 +104,6 @@ internal fun HistoryGraphPreview() {
                     createdAt = Calendar.getInstance().time.time,
                 ),
                 analyzeScore = RecordAnalyzeData(
-                    "",
-                    30f,
                     mapOf(
                         NoiseCategoryEnum.ANIMAL to 1,
                         NoiseCategoryEnum.VEHICLE to 2,

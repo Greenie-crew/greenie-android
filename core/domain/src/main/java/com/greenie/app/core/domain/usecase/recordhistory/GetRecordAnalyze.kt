@@ -2,6 +2,7 @@ package com.greenie.app.core.domain.usecase.recordhistory
 
 import com.greenie.app.common.audioanalyze.RecordFileManager
 import com.greenie.app.common.audioanalyze.TensorflowHelper
+import com.greenie.app.core.domain.entities.RecordHistoryEntity
 import com.greenie.app.core.domain.repository.RecordHistoryRepo
 import com.greenie.app.core.model.RecordAnalyzeData
 import kotlinx.coroutines.flow.Flow
@@ -14,8 +15,8 @@ class GetRecordAnalyze @Inject constructor(
         private val tensorflowHelper: TensorflowHelper,
         private val recordFileManager: RecordFileManager,
 ) {
-    operator fun invoke(fileName: String): Flow<RecordAnalyzeData?> = flow {
-        val recordHistoryEntity = recordHistoryRepo.getRecordHistoryByFileName(fileName).first()
+    operator fun invoke(fileName: String): Flow<RecordHistoryEntity?> = flow {
+        var recordHistoryEntity = recordHistoryRepo.getRecordHistoryByFileName(fileName).first()
         if (recordHistoryEntity.analyzeScore == null) {
             val recordFile = recordFileManager.getRecordFile(fileName)
             if (recordFile == null) {
@@ -23,12 +24,13 @@ class GetRecordAnalyze @Inject constructor(
                 emit(null)
                 return@flow
             }
-            val recordAnalyzeData = RecordAnalyzeData(fileName, recordHistoryEntity.baseInfo.averageDecibel, tensorflowHelper.analyzeAudio(recordFile).first())
+            val recordAnalyzeData = RecordAnalyzeData(tensorflowHelper.analyzeAudio(recordFile).first())
             recordHistoryRepo.saveRecordAnalyze(fileName, recordAnalyzeData)
+
             recordHistoryEntity.apply {
                 analyzeScore = recordHistoryRepo.getRecordHistoryByFileName(fileName).first().analyzeScore
             }
         }
-        emit(recordHistoryEntity.analyzeScore!!)
+        emit(recordHistoryEntity)
     }
 }

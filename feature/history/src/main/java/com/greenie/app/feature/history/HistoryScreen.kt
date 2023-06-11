@@ -544,8 +544,6 @@ internal fun HistoryByDatePreview() {
                             createdAt = Calendar.getInstance().time.time,
                         ),
                         analyzeScore = RecordAnalyzeData(
-                            "",
-                            1.0f,
                             mapOf(
                                 NoiseCategoryEnum.ANIMAL to 1,
                                 NoiseCategoryEnum.VEHICLE to 2,
@@ -581,8 +579,6 @@ internal fun HistoryItemByDatePreview() {
                     createdAt = Calendar.getInstance().time.time,
                 ),
                 analyzeScore = RecordAnalyzeData(
-                    "",
-                    30f,
                     mapOf(
                         NoiseCategoryEnum.ANIMAL to 1,
                         NoiseCategoryEnum.VEHICLE to 2,
