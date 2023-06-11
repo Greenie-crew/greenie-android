@@ -24,3 +24,7 @@ enum class RecordServiceState {
 //    GENERAL,
 //    TRACKING,
 //}
+
+fun RecordServiceData.isRunning(): Boolean {
+    return serviceState == RecordServiceState.RECORDING || serviceState == RecordServiceState.PAUSED || serviceState == RecordServiceState.SAVING
+}

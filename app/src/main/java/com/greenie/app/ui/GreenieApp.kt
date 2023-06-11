@@ -1,5 +1,6 @@
 package com.greenie.app.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,8 +29,10 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,26 +43,73 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.greenie.app.GreenieViewModel
+import com.greenie.app.R
 import com.greenie.app.core.designsystem.icon.AppIcons
 import com.greenie.app.core.designsystem.theme.Colors
+import com.greenie.app.core.domain.usecase.service.ServiceState
 import com.greenie.app.feature.record.navigation.navigateToRecord
+import com.greenie.app.feature.tracking.navigation.navigateToTracking
 import com.greenie.app.navigation.BottomNavigationItems
 import com.greenie.app.navigation.GreenieNavHost
 import com.greenie.app.navigation.TopLevelDestination
 import com.greenie.app.navigation.getDestination
+import com.greenie.app.navigation.showMessage
 import com.greenie.app.core.designsystem.R as DesignSystemR
 
 const val BottomBarHeight = 52
 
 @Composable
-fun GreenieApp() {
+fun GreenieApp(
+    viewModel: GreenieViewModel = hiltViewModel()
+) {
     val navHostController = rememberNavController()
     val backStackEntry by navHostController.currentBackStackEntryAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val serviceState by viewModel.serviceState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(serviceState) {
+        Log.d("GreenieApp", "serviceState: $serviceState")
+    }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    val recordErrorMessage = stringResource(id = R.string.navigate_record_error_message)
+    val trackingErrorMessage = stringResource(id = R.string.navigate_tracking_error_message)
+
+    val onNavigateToRecord: (NavOptionsBuilder.() -> Unit) -> Boolean = { navOptions ->
+        if (serviceState is ServiceState.Idle || serviceState is ServiceState.Recording) {
+            navHostController.navigateToRecord(navOptions)
+            true
+        } else {
+            snackbarHostState.showMessage(
+                coroutineScope = coroutineScope,
+                message = recordErrorMessage,
+            )
+            false
+        }
+    }
+
+    val onNavigateToTracking: (NavOptionsBuilder.() -> Unit) -> Boolean = { navOptions ->
+        if (serviceState is ServiceState.Idle || serviceState is ServiceState.Tracking) {
+            navHostController.navigateToTracking(navOptions)
+            true
+        } else {
+            snackbarHostState.showMessage(
+                coroutineScope = coroutineScope,
+                message = trackingErrorMessage,
+            )
+            false
+        }
+    }
 
     Scaffold(
         modifier = Modifier,
@@ -108,6 +158,9 @@ fun GreenieApp() {
                         .fillMaxWidth()
                         .weight(1f),
                     navController = navHostController,
+                    onNavigateToRecord = onNavigateToRecord,
+                    onNavigateToTracking = onNavigateToTracking,
+                    serviceState = serviceState,
                     snackbarHostState = snackbarHostState,
                 )
             }
@@ -129,7 +182,7 @@ fun GreenieApp() {
                     }
                 },
                 onClickFab = {
-                    navHostController.navigateToRecord() {
+                    onNavigateToRecord {
                         popUpTo(navHostController.graph.startDestinationId) {
                             saveState = true
                             inclusive = false
@@ -207,7 +260,7 @@ private fun BoxScope.AppBottomBar(
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.background)
             .padding(8.dp)
-            .height(64.dp)
+            .height(56.dp)
             .aspectRatio(1f, matchHeightConstraintsFirst = true)
             .clip(CircleShape)
             .clickable {

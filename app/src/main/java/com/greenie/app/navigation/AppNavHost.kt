@@ -6,17 +6,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
+import com.greenie.app.core.domain.usecase.service.ServiceState
 import com.greenie.app.feature.history.navigation.historyScreen
 import com.greenie.app.feature.home.navigation.homeScreen
-import com.greenie.app.feature.record.navigation.navigateToRecord
 import com.greenie.app.feature.record.navigation.recordScreen
 import com.greenie.app.feature.result.navigation.navigateToResult
 import com.greenie.app.feature.result.navigation.resultScreen
-import com.greenie.app.feature.tracking.navigation.navigateToTracking
+import com.greenie.app.feature.tracking.navigation.trackingScreen
 import com.greenie.app.feature.web.navigation.navigateToWeb
 import com.greenie.app.feature.web.navigation.webScreen
 import com.greenie.app.service.service.RecordForegroundService
+import com.greenie.app.service.service.TrackingForegroundService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -24,6 +26,9 @@ import kotlinx.coroutines.launch
 internal fun GreenieNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController,
+    serviceState: ServiceState,
+    onNavigateToRecord: (NavOptionsBuilder.() -> Unit) -> Boolean,
+    onNavigateToTracking: (NavOptionsBuilder.() -> Unit) -> Boolean,
     snackbarHostState: SnackbarHostState,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -40,16 +45,15 @@ internal fun GreenieNavHost(
             showMessage = { text ->
                 snackbarHostState.showMessage(
                     coroutineScope = coroutineScope,
-                    text = text,
+                    message = text,
                 )
             },
+            serviceState = serviceState,
             onNavigateToRecord = {
-                navController.navigateToRecord() {
-
-                }
+                onNavigateToRecord {}
             },
             onNavigateToTracking = {
-                navController.navigateToTracking()
+                onNavigateToTracking {}
             },
             onNavigateToWeb = { url ->
                 navController.navigateToWeb(url) {
@@ -63,7 +67,7 @@ internal fun GreenieNavHost(
             showMessage = { text ->
                 snackbarHostState.showMessage(
                     coroutineScope = coroutineScope,
-                    text = text,
+                    message = text,
                 )
             },
             onStartRecord = {
@@ -83,11 +87,32 @@ internal fun GreenieNavHost(
             },
         )
 
+        trackingScreen(
+            showMessage = { text ->
+                snackbarHostState.showMessage(
+                    coroutineScope = coroutineScope,
+                    message = text,
+                )
+            },
+            onStartTracking = {
+                TrackingForegroundService.startTrackingService(context)
+            },
+            onPauseTracking = {
+                TrackingForegroundService.pauseTrackingService(context)
+            },
+            onStopTracking = {
+                TrackingForegroundService.stopTrackingService(context)
+            },
+            onNavigateBack = {
+                navController.popBackStack()
+            },
+        )
+
         historyScreen(
             showMessage = { text ->
                 snackbarHostState.showMessage(
                     coroutineScope = coroutineScope,
-                    text = text,
+                    message = text,
                 )
             },
             onNavigateToResult = { fileName ->
@@ -102,7 +127,7 @@ internal fun GreenieNavHost(
             showMessage = { text ->
                 snackbarHostState.showMessage(
                     coroutineScope = coroutineScope,
-                    text = text,
+                    message = text,
                 )
             },
             onNavigateBack = {
@@ -124,27 +149,25 @@ internal fun GreenieNavHost(
             showMessage = { text ->
                 snackbarHostState.showMessage(
                     coroutineScope = coroutineScope,
-                    text = text,
+                    message = text,
                 )
             },
             onNavigateBack = {
                 navController.popBackStack()
             },
             onNavigateToRecord = {
-                navController.navigateToRecord()
-            },
+                onNavigateToRecord {}
+            }
         )
-
-
     }
 }
 
-private fun SnackbarHostState.showMessage(
+internal fun SnackbarHostState.showMessage(
     coroutineScope: CoroutineScope,
-    text: String,
+    message: String,
 ) {
     coroutineScope.launch {
         currentSnackbarData?.dismiss()
-        showSnackbar(text)
+        showSnackbar(message)
     }
 }

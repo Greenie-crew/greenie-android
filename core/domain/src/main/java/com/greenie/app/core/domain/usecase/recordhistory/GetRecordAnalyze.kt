@@ -23,7 +23,7 @@ class GetRecordAnalyze @Inject constructor(
                 emit(null)
                 return@flow
             }
-            val recordAnalyzeData = RecordAnalyzeData(recordHistoryEntity.baseInfo.averageDecibel, tensorflowHelper.analyzeAudio(recordFile).first())
+            val recordAnalyzeData = RecordAnalyzeData(fileName, recordHistoryEntity.baseInfo.averageDecibel, tensorflowHelper.analyzeAudio(recordFile).first())
             recordHistoryRepo.saveRecordAnalyze(fileName, recordAnalyzeData)
             recordHistoryEntity.apply {
                 analyzeScore = recordHistoryRepo.getRecordHistoryByFileName(fileName).first().analyzeScore

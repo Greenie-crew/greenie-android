@@ -2,8 +2,10 @@ package com.greenie.app.core.data.di
 
 import com.greenie.app.core.data.repository.RecordHistoryRepoImpl
 import com.greenie.app.core.data.repository.RecordServiceRepoImpl
+import com.greenie.app.core.data.repository.TrackingServiceRepoImpl
 import com.greenie.app.core.domain.repository.RecordHistoryRepo
 import com.greenie.app.core.domain.repository.RecordServiceRepo
+import com.greenie.app.core.domain.repository.TrackingServiceRepo
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -18,6 +20,12 @@ interface DataModule {
     fun bindRecordServiceRepository(
         recordServiceRepo: RecordServiceRepoImpl
     ): RecordServiceRepo
+
+    @Binds
+    @Singleton
+    fun bindTrackingServiceRepository(
+        trackingServiceRepo: TrackingServiceRepoImpl
+    ): TrackingServiceRepo
 
     @Binds
     @Singleton

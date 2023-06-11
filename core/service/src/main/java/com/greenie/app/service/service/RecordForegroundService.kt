@@ -82,13 +82,17 @@ class RecordForegroundService : Service() {
 
                 serviceJob = CoroutineScope(Dispatchers.IO).launch {
                     val audioRecordDataflow = AudioRecordManager.startRecording()
-                    val initialValue = audioRecordDataflow.first()
 
-                    var decibelValue = AudioRecordManager.calculateDecibel(initialValue).toFloat()
-                    minimumDecibel = decibelValue
-                    maximumDecibel = decibelValue
-                    decibelTotal = 0f
-                    decibelCount = 0
+                    var decibelValue: Float
+
+                    if (decibelCount == 0) {
+                        val initialValue = audioRecordDataflow.first()
+                        decibelValue = AudioRecordManager.calculateDecibel(initialValue).toFloat()
+                        minimumDecibel = decibelValue
+                        maximumDecibel = decibelValue
+                        decibelTotal = 0f
+                        decibelCount = 0
+                    }
 
                     audioRecordDataflow.collectLatest { byteArray ->
                         /**
@@ -235,7 +239,7 @@ class RecordForegroundService : Service() {
     companion object {
         private val _recordServiceDataSharedFlow = MutableSharedFlow<RecordServiceData>(
             replay = 1,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
         val recordServiceDataSharedFlow: SharedFlow<RecordServiceData> =
             _recordServiceDataSharedFlow.asSharedFlow()

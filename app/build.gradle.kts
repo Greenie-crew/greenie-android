@@ -67,11 +67,14 @@ android {
 
 dependencies {
     implementation(projects.core.data)
+    implementation(projects.core.domain)
     implementation(projects.core.designsystem)
     implementation(projects.core.ui)
     implementation(projects.core.service)
+    implementation(projects.core.model)
     implementation(projects.feature.home)
     implementation(projects.feature.record)
+    implementation(projects.feature.tracking)
     implementation(projects.feature.history)
     implementation(projects.feature.result)
     implementation(projects.feature.tracking)
@@ -88,6 +91,10 @@ dependencies {
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+
+    implementation(libs.hilt.ext.work)
+    implementation(libs.hilt.ext.navigation.compose)
+    kapt(libs.hilt.ext.compiler)
 
     testImplementation(libs.junit4)
 

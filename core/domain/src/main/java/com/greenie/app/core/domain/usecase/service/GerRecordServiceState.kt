@@ -1,4 +1,4 @@
-package com.greenie.app.core.domain.usecase.recordservice
+package com.greenie.app.core.domain.usecase.service
 
 import com.greenie.app.core.domain.entities.RecordServiceStateEntity
 import com.greenie.app.core.domain.repository.RecordServiceRepo

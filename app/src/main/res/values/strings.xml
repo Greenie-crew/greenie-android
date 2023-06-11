@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">잡았다! 소음</string>
+
+    <string name="navigate_record_error_message">트래킹 검사 중에는 소음 측정이 불가능합니다.</string>
+    <string name="navigate_tracking_error_message">소음 측정 중에는 트래킹이 불가능합니다.</string>
 </resources>

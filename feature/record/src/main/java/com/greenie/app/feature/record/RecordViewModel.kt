@@ -4,12 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.greenie.app.core.domain.usecase.recordhistory.SaveRecordHistory
-import com.greenie.app.core.domain.usecase.recordservice.GetRecordServiceState
+import com.greenie.app.core.domain.usecase.service.GetRecordServiceState
 import com.greenie.app.core.model.RecordServiceData
 import com.greenie.app.core.model.RecordServiceState
 import com.greenie.app.feature.record.navigation.RecordArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +32,7 @@ class RecordViewModel @Inject constructor(
             initialValue = RecordUiState.IDLE
         )
 
-    val recordServiceData: Flow<RecordServiceData> = getRecordServiceState()
+    val recordServiceData: StateFlow<RecordServiceData> = getRecordServiceState()
         .map { serviceEntity ->
             when (serviceEntity.recordState.serviceState) {
                 RecordServiceState.SAVING -> {
@@ -49,7 +48,19 @@ class RecordViewModel @Inject constructor(
             }
 
             serviceEntity.recordState
-        }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = RecordServiceData(
+                serviceState = RecordServiceState.IDLE,
+                fileName = "",
+                createdTime = 0L,
+                decibelValue = 0f,
+                minimumDecibel = 0f,
+                maximumDecibel = 0f,
+                averageDecibel = 0f,
+            )
+        )
 }
 
 internal sealed interface RecordUiState {

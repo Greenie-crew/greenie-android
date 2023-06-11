@@ -33,10 +33,13 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.greenie.app.common.GREENIE_WEB_URL
+import com.greenie.app.common.UUID
 import com.greenie.app.core.designsystem.theme.AppTheme
 import kotlinx.coroutines.flow.collectLatest
 
 private const val AVERAGE_PARAMETER_KEY = "average"
+private const val UUID_PARAMETER_KEY = "uid"
+private const val FILENAME_PARAMETER_KEY = "filename"
 
 @Composable
 internal fun ResultRoute(
@@ -58,12 +61,15 @@ internal fun ResultRoute(
                     showMessage(errorMessage)
                     onNavigateBack()
                 }
+
                 is ResultUiState.LOADED -> {
                     onNavigateToWeb(
                         Uri.parse(GREENIE_WEB_URL)
                             .buildUpon()
                             .apply {
                                 val resultData = resultUiState.analyzeResultData
+                                appendQueryParameter(UUID_PARAMETER_KEY, UUID)
+                                appendQueryParameter(FILENAME_PARAMETER_KEY, resultData.fileName)
                                 appendQueryParameter(
                                     AVERAGE_PARAMETER_KEY,
                                     resultData.averageDecibel.toString()
@@ -76,6 +82,7 @@ internal fun ResultRoute(
                             .toString(),
                     )
                 }
+
                 else -> {
                     showLoading = true
                 }

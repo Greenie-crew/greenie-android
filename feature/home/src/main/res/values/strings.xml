@@ -2,6 +2,9 @@
 <resources>
     <string name="home_navigation_label">메뉴</string>
 
+    <string name="home_item_sleeping">휴식중…</string>
+    <string name="home_item_working">검사중…</string>
+
     <string name="home_record_button_title">소음 측정하기</string>
     <string name="home_record_button_description">방금 그 소음, 어디서 나온 거지? 소음의 원인을 분석해 보세요!</string>
     <string name="home_tracking_button_title">소음 트래킹 검사</string>

@@ -36,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.greenie.app.common.GREENIE_WEB_URL
 import com.greenie.app.core.designsystem.theme.AppTheme
 import com.greenie.app.core.designsystem.theme.Colors
+import com.greenie.app.core.domain.usecase.service.ServiceState
 
 const val BANNER_URL = "https://youtu.be/alI91xtwELU"
 const val TIP_URL = "$GREENIE_WEB_URL/solution"
@@ -46,6 +47,7 @@ const val SHOP_URL = "$GREENIE_WEB_URL/product"
 @Composable
 internal fun HomeRoute(
     showMessage: (String) -> Unit,
+    serviceState: ServiceState,
     onNavigateToRecord: () -> Unit,
     onNavigateToTracking: () -> Unit,
     onNavigateToWeb: (String) -> Unit,
@@ -55,6 +57,7 @@ internal fun HomeRoute(
 
     HomeScreen(
         showMessage = showMessage,
+        serviceState = serviceState,
         onNavigateToRecord = onNavigateToRecord,
         onNavigateToTracking = onNavigateToTracking,
         onNavigateToTip = {
@@ -78,6 +81,7 @@ internal fun HomeRoute(
 @Composable
 internal fun HomeScreen(
     showMessage: (String) -> Unit,
+    serviceState: ServiceState,
     onNavigateToRecord: () -> Unit,
     onNavigateToTracking: () -> Unit,
     onNavigateToTip: () -> Unit,
@@ -141,6 +145,11 @@ internal fun HomeScreen(
                                 Color(0xFF2A60B2)
                             ),
                         textColor = Color.White,
+                        cardState = when (serviceState) {
+                            is ServiceState.Idle -> CardState.IDLE
+                            is ServiceState.Recording -> CardState.WORKING
+                            is ServiceState.Tracking -> CardState.SLEEP
+                        },
                         HomeCardItem(
                             title = stringResource(id = R.string.home_record_button_title),
                             description = stringResource(id = R.string.home_record_button_description),
@@ -157,6 +166,11 @@ internal fun HomeScreen(
                                 Color(0xFF82DFFC)
                             ),
                         textColor = Colors.headline,
+                        cardState = when (serviceState) {
+                            is ServiceState.Idle -> CardState.IDLE
+                            is ServiceState.Recording -> CardState.SLEEP
+                            is ServiceState.Tracking -> CardState.WORKING
+                        },
                         HomeCardItem(
                             title = stringResource(id = R.string.home_tracking_button_title),
                             description = stringResource(id = R.string.home_tracking_button_description),
@@ -234,10 +248,17 @@ private data class HomeCardItem(
     val onClick: () -> Unit,
 )
 
+enum class CardState {
+    IDLE,
+    WORKING,
+    SLEEP,
+}
+
 @Composable
 private fun HomeCardBigItem(
     modifier: Modifier = Modifier,
     textColor: Color = Color.White,
+    cardState: CardState,
     cardItem: HomeCardItem,
 ) {
     Box(
@@ -281,6 +302,82 @@ private fun HomeCardBigItem(
             painter = cardItem.bottomPainter,
             contentDescription = "Item Bottom Image"
         )
+        /**
+         * CardState
+         */
+        when (cardState) {
+            CardState.IDLE -> {}
+            CardState.WORKING -> WorkingCard()
+            CardState.SLEEP -> SleepCard()
+        }
+    }
+}
+
+@Composable
+private fun WorkingCard() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                color = Color(0x99111111),
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.8f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Image(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                painter = painterResource(id = R.drawable.ic_working),
+                contentDescription = "Working Image"
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(id = R.string.home_item_working),
+                style = LocalTextStyle.current.copy(
+                    color = Color.White,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 20.sp
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun SleepCard() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                color = Color(0x99111111),
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.8f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Image(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                painter = painterResource(id = R.drawable.ic_sleep),
+                contentDescription = "Sleep Image"
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(id = R.string.home_item_sleeping),
+                style = LocalTextStyle.current.copy(
+                    color = Color.White,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 20.sp
+                )
+            )
+        }
     }
 }
 
@@ -384,6 +481,7 @@ private fun HomeCardSmallItem(
 internal fun HomeRoutePreview() {
     AppTheme {
         HomeScreen(
+            serviceState = ServiceState.Recording,
             showMessage = {},
             onNavigateToRecord = {},
             onNavigateToTracking = {},
@@ -391,7 +489,7 @@ internal fun HomeRoutePreview() {
             onNavigateToCounsel = {},
             onNavigateToHealth = {},
             onNavigateToShop = {},
-            onBannerClick = {}
+            onBannerClick = {},
         )
     }
 }

@@ -5,6 +5,7 @@ import androidx.navigation.NavBackStackEntry
 import com.greenie.app.feature.home.navigation.homeNavigationRoute
 import com.greenie.app.feature.record.navigation.recordNavigationRoute
 import com.greenie.app.feature.history.navigation.historyNavigationRoute
+import com.greenie.app.feature.tracking.navigation.trackingNavigationRoute
 import com.greenie.app.feature.home.R as MenuR
 import com.greenie.app.feature.record.R as RecordR
 import com.greenie.app.feature.history.R as HistoryR
@@ -35,7 +36,7 @@ enum class TopLevelDestination(
         null,
     ),
     Tracking(
-        "tracking",
+        trackingNavigationRoute,
         TrackingR.string.tracking_title,
         null,
     ),

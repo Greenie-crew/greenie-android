@@ -35,17 +35,7 @@ internal fun RecordRoute(
     viewModel: RecordViewModel = hiltViewModel()
 ) {
     val recordUiState by viewModel.recordUiState.collectAsStateWithLifecycle()
-    val recordServiceData by viewModel.recordServiceData.collectAsStateWithLifecycle(
-        RecordServiceData(
-            serviceState = RecordServiceState.IDLE,
-            fileName = "",
-            createdTime = 0L,
-            decibelValue = 0f,
-            minimumDecibel = 0f,
-            maximumDecibel = 0f,
-            averageDecibel = 0f,
-        )
-    )
+    val recordServiceData by viewModel.recordServiceData.collectAsStateWithLifecycle()
 
     var reserveNavigationToResult by remember { mutableStateOf(false) }
 

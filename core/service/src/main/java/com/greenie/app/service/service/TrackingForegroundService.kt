@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.CountDownTimer
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.greenie.app.common.audioanalyze.AudioRecordManager
@@ -16,7 +17,6 @@ import com.greenie.app.service.di.RecordServiceNotificationChannelId
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.BufferOverflow
@@ -44,24 +44,39 @@ class TrackingForegroundService : Service() {
 
     private var serviceJob: Job? = null
 
-
-    private var startTime = 0L
     private var leftTime = TRACKING_TIME_LIMIT
     private val loudNoiseHistory = mutableListOf<NoiseHistoryData>()
+
+    private val timer = object : CountDownTimer(TRACKING_TIME_LIMIT, 1000) {
+        override fun onTick(millisUntilFinished: Long) {
+            leftTime = millisUntilFinished
+            _trackingServiceDataSharedFlow.tryEmit(
+                TrackingServiceData(
+                    serviceState = TrackingServiceState.TRACKING,
+                    leftTime = leftTime,
+                    loudNoiseHistory = loudNoiseHistory,
+                )
+            )
+            startForeground(TRACKING_SERVICE_NOTIFICATION_ID, createNotification(leftTime))
+        }
+
+        override fun onFinish() {
+            stopSelf()
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
         startForeground(TRACKING_SERVICE_NOTIFICATION_ID, createNotification(leftTime))
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             TrackerServiceAction.START_TRACKING.action -> {
                 if (serviceJob?.isActive == true) {
                     return START_STICKY
                 }
-                startTime = System.currentTimeMillis()
+                timer.start()
                 serviceJob = CoroutineScope(Dispatchers.IO).launch {
                     val audioRecordDataflow = AudioRecordManager.startRecording(LATENCY_TIME)
                     audioRecordDataflow.collectLatest { byteArray ->
@@ -77,22 +92,6 @@ class TrackingForegroundService : Service() {
                                 )
                             )
                         }
-
-                        _trackingServiceDataSharedFlow.emit(
-                            TrackingServiceData(
-                                serviceState = TrackingServiceState.TRACKING,
-                                leftTime = leftTime,
-                                loudNoiseHistory = loudNoiseHistory,
-                            )
-                        )
-
-                        leftTime -= (System.currentTimeMillis() - startTime)
-
-                        if (leftTime <= 0) {
-                            stopSelf()
-                            stopService(intent)
-                        }
-                        startForeground(TRACKING_SERVICE_NOTIFICATION_ID, createNotification(leftTime))
                     }
                 }
             }
@@ -113,25 +112,30 @@ class TrackingForegroundService : Service() {
             }
 
             TrackerServiceAction.END_TRACKING.action -> {
-                CoroutineScope(Dispatchers.IO).launch {
-                    _trackingServiceDataSharedFlow.replayCache.lastOrNull()?.let { serviceData ->
-                        _trackingServiceDataSharedFlow.emit(
-                            serviceData.copy(
-                                serviceState = TrackingServiceState.END,
-                            )
-                        )
-                    }
-                    if (serviceJob?.isActive == true) {
-                        serviceJob?.cancelAndJoin()
-                    }
-                    AudioRecordManager.stopRecording()
-                    stopSelf()
-                    stopService(intent)
-                }
+                stopSelf()
+                stopService(intent)
             }
         }
 
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    override fun onDestroy() {
+        timer.cancel()
+        CoroutineScope(Dispatchers.IO).launch {
+            if (serviceJob?.isActive == true) {
+                serviceJob?.cancelAndJoin()
+            }
+            AudioRecordManager.stopRecording()
+            _trackingServiceDataSharedFlow.emit(
+                TrackingServiceData(
+                    serviceState = TrackingServiceState.END,
+                    leftTime = leftTime,
+                    loudNoiseHistory = loudNoiseHistory,
+                )
+            )
+        }
+        super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -142,15 +146,14 @@ class TrackingForegroundService : Service() {
         NotificationCompat.Builder(this, serviceNotificationChannelId)
             .setContentTitle(getString(R.string.record_service_notification_title))
             .run {
-                val leftTimeSecond = leftTime / 1000
                 setContentText(
                     getString(
                         R.string.record_service_notification_content,
                         String.format(
                             "%02d:%02d:%02d",
-                            leftTimeSecond / 3600,
-                            (leftTimeSecond % 3600) / 60,
-                            leftTimeSecond % 60
+                            leftTime / 1000 / 60 / 60,
+                            leftTime / 1000 / 60 % 60,
+                            leftTime / 1000 % 60
                         )
                     )
                 )

@@ -17,3 +17,11 @@ enum class TrackingServiceState {
     PAUSE,
     END,
 }
+
+fun TrackingServiceData.isRunning(): Boolean {
+    return serviceState == TrackingServiceState.TRACKING || serviceState == TrackingServiceState.PAUSE
+}
+
+fun TrackingServiceData.isEnd(): Boolean {
+    return serviceState == TrackingServiceState.END
+}
