@@ -1,16 +1,12 @@
 package com.greenie.app.feature.history
 
-import android.util.Log
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -65,16 +61,27 @@ internal fun HistoryGraph(
         val maxValue = chartScrollState.maxValue
         val currentValue = chartScrollState.value
         val targetValue = maxValue * scrollTarget - currentValue
-        Log.d("HistoryGraph", "maxValue: $maxValue, currentValue: $currentValue, targetValue: $targetValue")
         chartScrollState.animateScrollBy(targetValue)
     }
 
     val axisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { i, _ ->
-            if (i.toInt() >= resultData.size) return@AxisValueFormatter ""
-            val calendar = Calendar.getInstance()
-            val time = resultData[i.toInt()].baseInfo.createdAt
-            calendar.time = Date(time)
+        val index = i.toInt()
+        if (index >= resultData.size) return@AxisValueFormatter ""
+        val calendar = Calendar.getInstance()
+        val time = resultData[index].baseInfo.createdAt.run {
+            calendar.time = Date(this)
             "${calendar.get(Calendar.DAY_OF_MONTH)}"
+        }
+        if (index >= 1) {
+            val beforeTime = resultData[index - 1].baseInfo.createdAt.run {
+                calendar.time = Date(this)
+                "${calendar.get(Calendar.DAY_OF_MONTH)}"
+            }
+            if (time == beforeTime) {
+                return@AxisValueFormatter ""
+            }
+        }
+        time.toString()
     }
 
     val columnChart = columnChart()

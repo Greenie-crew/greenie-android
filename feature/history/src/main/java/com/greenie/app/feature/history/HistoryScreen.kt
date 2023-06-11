@@ -508,7 +508,6 @@ private fun HistoryItemAnalyzeButton(
         onClick = onClickShowAnalyze,
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
-            contentColor = containerColor,
         ),
         border = BorderStroke(
             width = 1.dp,
