@@ -104,95 +104,99 @@ internal fun HistoryScreen(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        Spacer(modifier = Modifier.height(30.dp))
-        TabRow(
-            modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .wrapContentHeight(align = Alignment.CenterVertically)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(50)),
-            selectedTabIndex = pagerState.currentPage,
-            containerColor = Color(0xFFF7F7FB),
-            contentColor = Color(0xFFF7F7FB),
-            divider = { },
-            indicator = { tabPositions: List<TabPosition> ->
-                val transition = updateTransition(
-                    pagerState.currentPage,
-                    label = "Tab indicator"
-                )
-                val indicatorLeft by transition.animateDp(
-                    transitionSpec = {
-                        if (initialState < targetState) {
-                            spring(stiffness = Spring.StiffnessVeryLow)
-                        } else {
-                            spring(stiffness = Spring.StiffnessMedium)
-                        }
-                    },
-                    label = "Indicator left"
-                ) { page ->
-                    tabPositions[page].left
-                }
-                val indicatorRight by transition.animateDp(
-                    transitionSpec = {
-                        if (initialState < targetState) {
-                            spring(stiffness = Spring.StiffnessMedium)
-                        } else {
-                            spring(stiffness = Spring.StiffnessVeryLow)
-                        }
-                    },
-                    label = "Indicator right"
-                ) { page ->
-                    tabPositions[page].right
-                }
-                Box(
-                    modifier = Modifier
-                        .wrapContentSize(align = Alignment.BottomStart)
-                        .offset(x = indicatorLeft)
-                        .width(indicatorRight - indicatorLeft)
-                        .fillMaxSize()
-                        .border(
-                            width = 1.dp,
-                            color = Color(0xFF1A93FE),
-                            shape = RoundedCornerShape(50)
-                        )
-                        .clip(RoundedCornerShape(50))
-                        .background(Color.White)
-                )
-            }
-        ) {
-            rowList.forEachIndexed { index, title ->
-                Tab(
-                    modifier = Modifier
-                        .zIndex(2f)
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(50)),
-                    text = {
-                        Text(
-                            text = title,
-                            style = LocalTextStyle.current.copy(
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 16.sp,
-                                color = if (pagerState.currentPage == index) {
-                                    Color(0xFF1A93FE)
-                                } else {
-                                    Color(0xFF999999)
-                                }
-                            )
-                        )
-                    },
-                    selected = pagerState.currentPage == index,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(index)
-                        }
-                    },
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(30.dp))
+//        Spacer(modifier = Modifier.height(30.dp))
+//        TabRow(
+//            modifier = Modifier
+//                .padding(horizontal = 20.dp)
+//                .wrapContentHeight(align = Alignment.CenterVertically)
+//                .fillMaxWidth()
+//                .clip(RoundedCornerShape(50)),
+//            selectedTabIndex = pagerState.currentPage,
+//            containerColor = Color(0xFFF7F7FB),
+//            contentColor = Color(0xFFF7F7FB),
+//            divider = { },
+//            indicator = { tabPositions: List<TabPosition> ->
+//                val transition = updateTransition(
+//                    pagerState.currentPage,
+//                    label = "Tab indicator"
+//                )
+//                val indicatorLeft by transition.animateDp(
+//                    transitionSpec = {
+//                        if (initialState < targetState) {
+//                            spring(stiffness = Spring.StiffnessVeryLow)
+//                        } else {
+//                            spring(stiffness = Spring.StiffnessMedium)
+//                        }
+//                    },
+//                    label = "Indicator left"
+//                ) { page ->
+//                    tabPositions[page].left
+//                }
+//                val indicatorRight by transition.animateDp(
+//                    transitionSpec = {
+//                        if (initialState < targetState) {
+//                            spring(stiffness = Spring.StiffnessMedium)
+//                        } else {
+//                            spring(stiffness = Spring.StiffnessVeryLow)
+//                        }
+//                    },
+//                    label = "Indicator right"
+//                ) { page ->
+//                    tabPositions[page].right
+//                }
+//                Box(
+//                    modifier = Modifier
+//                        .wrapContentSize(align = Alignment.BottomStart)
+//                        .offset(x = indicatorLeft)
+//                        .width(indicatorRight - indicatorLeft)
+//                        .fillMaxSize()
+//                        .border(
+//                            width = 1.dp,
+//                            color = Color(0xFF1A93FE),
+//                            shape = RoundedCornerShape(50)
+//                        )
+//                        .clip(RoundedCornerShape(50))
+//                        .background(Color.White)
+//                )
+//            }
+//        ) {
+//            rowList.forEachIndexed { index, title ->
+//                Tab(
+//                    modifier = Modifier
+//                        .zIndex(2f)
+//                        .height(48.dp)
+//                        .clip(RoundedCornerShape(50)),
+//                    text = {
+//                        Text(
+//                            text = title,
+//                            style = LocalTextStyle.current.copy(
+//                                fontWeight = FontWeight.Medium,
+//                                fontSize = 16.sp,
+//                                color = if (pagerState.currentPage == index) {
+//                                    Color(0xFF1A93FE)
+//                                } else {
+//                                    Color(0xFF999999)
+//                                }
+//                            )
+//                        )
+//                    },
+//                    selected = pagerState.currentPage == index,
+//                    onClick = {
+//                        scope.launch {
+//                            pagerState.animateScrollToPage(index)
+//                        }
+//                    },
+//                )
+//            }
+//        }
+//        Spacer(modifier = Modifier.height(30.dp))
 
         HorizontalPager(
-            pageCount = rowList.size,
+            /**
+             * Temporary pageCount is 1
+             */
+//            pageCount = rowList.size,
+            pageCount = 1,
             state = pagerState,
         ) { page ->
             when (page) {

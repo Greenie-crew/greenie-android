@@ -44,6 +44,8 @@ dependencies {
 
     implementation(libs.bundles.coil)
 
+    implementation(libs.bundles.vico)
+
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 

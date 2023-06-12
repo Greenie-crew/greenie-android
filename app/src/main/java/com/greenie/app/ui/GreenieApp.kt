@@ -53,6 +53,7 @@ import com.greenie.app.GreenieViewModel
 import com.greenie.app.R
 import com.greenie.app.core.designsystem.icon.AppIcons
 import com.greenie.app.core.designsystem.theme.Colors
+import com.greenie.app.core.designsystem.theme.ToolbarHeightCompositionLocal
 import com.greenie.app.core.domain.usecase.service.ServiceState
 import com.greenie.app.feature.record.navigation.navigateToRecord
 import com.greenie.app.feature.tracking.navigation.navigateToTracking
@@ -205,7 +206,7 @@ private fun TopAppBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
+            .height(ToolbarHeightCompositionLocal.current),
     ) {
         if (onBackClick != null) {
             IconButton(

@@ -14,4 +14,10 @@
     <string name="tracking_require_agreement_message">모든 항목을 클릭하여 동의해주세요.</string>
     <string name="tracking_start_button_title">지금 검사하기</string>
     <string name="tracking_stop">취소</string>
+
+    <string name="tracking_result_toolbar_title">검사 결과</string>
+    <string name="tracking_result_date">%1$s-%2$s-%3$s</string>
+    <string name="tracking_result_description_start">총\u0020</string>
+    <string name="tracking_result_description_middle">%1$d번\u0020</string>
+    <string name="tracking_result_description_end">큰 소음에 노출됐어요</string>
 </resources>

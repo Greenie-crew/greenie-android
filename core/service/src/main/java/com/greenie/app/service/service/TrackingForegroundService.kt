@@ -25,12 +25,14 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 private const val TRACKING_SERVICE_NOTIFICATION_ID = 2
 private const val TRACKING_TIME_LIMIT = 4 * 60 * 60 * 1000L
-private const val TRACKING_THRESHOLDS_DECIBEL = 60f
-private const val LATENCY_TIME = 1000L
+//private const val TRACKING_TIME_LIMIT = 10000L
+private const val LATENCY_TIME = 1 * 1000L
+//private const val LATENCY_TIME = 500L
 
 @AndroidEntryPoint
 class TrackingForegroundService : Service() {
@@ -47,23 +49,9 @@ class TrackingForegroundService : Service() {
     private var leftTime = TRACKING_TIME_LIMIT
     private val loudNoiseHistory = mutableListOf<NoiseHistoryData>()
 
-    private val timer = object : CountDownTimer(TRACKING_TIME_LIMIT, 1000) {
-        override fun onTick(millisUntilFinished: Long) {
-            leftTime = millisUntilFinished
-            _trackingServiceDataSharedFlow.tryEmit(
-                TrackingServiceData(
-                    serviceState = TrackingServiceState.TRACKING,
-                    leftTime = leftTime,
-                    loudNoiseHistory = loudNoiseHistory,
-                )
-            )
-            startForeground(TRACKING_SERVICE_NOTIFICATION_ID, createNotification(leftTime))
-        }
+    private lateinit var timer: CountDownTimer
 
-        override fun onFinish() {
-            stopSelf()
-        }
-    }
+    private lateinit var temporaryHighestDecibelPerMinute: Pair<Int, Float>
 
     override fun onCreate() {
         super.onCreate()
@@ -76,31 +64,74 @@ class TrackingForegroundService : Service() {
                 if (serviceJob?.isActive == true) {
                     return START_STICKY
                 }
+                timer = object : CountDownTimer(leftTime, 1000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        leftTime = millisUntilFinished
+                        _trackingServiceDataSharedFlow.tryEmit(
+                            TrackingServiceData(
+                                serviceState = TrackingServiceState.TRACKING,
+                                leftTime = leftTime,
+                                loudNoiseHistory = loudNoiseHistory,
+                            )
+                        )
+                        startForeground(
+                            TRACKING_SERVICE_NOTIFICATION_ID,
+                            createNotification(leftTime)
+                        )
+                    }
+
+                    override fun onFinish() {
+                        stopSelf()
+                    }
+                }
                 timer.start()
                 serviceJob = CoroutineScope(Dispatchers.IO).launch {
+                    val calendar = Calendar.getInstance()
+                    calendar.timeInMillis = System.currentTimeMillis()
+                    temporaryHighestDecibelPerMinute = Pair(
+                        calendar.get(Calendar.MINUTE),
+                        0f
+                    )
                     val audioRecordDataflow = AudioRecordManager.startRecording(LATENCY_TIME)
                     audioRecordDataflow.collectLatest { byteArray ->
                         /**
                          * Calculate decibel value and update RecordServiceDataFlow
                          */
                         val decibelValue = AudioRecordManager.calculateDecibel(byteArray).toFloat()
-                        if (decibelValue > TRACKING_THRESHOLDS_DECIBEL) {
+                        temporaryHighestDecibelPerMinute = if (decibelValue > temporaryHighestDecibelPerMinute.second) {
+                            Pair(
+                                temporaryHighestDecibelPerMinute.first,
+                                decibelValue
+                            )
+                        } else {
+                            Pair(
+                                temporaryHighestDecibelPerMinute.first,
+                                temporaryHighestDecibelPerMinute.second
+                            )
+                        }
+                        calendar.timeInMillis = System.currentTimeMillis()
+                        val minute = calendar.get(Calendar.MINUTE)
+                        if (minute != temporaryHighestDecibelPerMinute.first) {
                             loudNoiseHistory.add(
                                 NoiseHistoryData(
                                     time = System.currentTimeMillis(),
-                                    decibel = decibelValue
+                                    decibel = temporaryHighestDecibelPerMinute.second
                                 )
+                            )
+                            temporaryHighestDecibelPerMinute = Pair(
+                                minute,
+                                0f
                             )
                         }
                     }
                 }
             }
 
-
             TrackerServiceAction.PAUSE_TRACKING.action -> {
                 if (serviceJob?.isActive == true) {
                     serviceJob?.cancel()
                 }
+                timer.cancel()
                 AudioRecordManager.pauseRecording()
                 _trackingServiceDataSharedFlow.tryEmit(
                     TrackingServiceData(

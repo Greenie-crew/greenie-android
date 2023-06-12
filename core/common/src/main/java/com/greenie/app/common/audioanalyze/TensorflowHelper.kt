@@ -25,10 +25,10 @@ const val SKIP_TIME = 0.9f
 val SPLIT_SHORT_SIZE = (SAMPLE_RATE * SPLIT_TIME).toInt()
 val SPLIT_BYTE_SIZE = SPLIT_SHORT_SIZE * 2
 val SKIP_BYTE_SIZE = (SAMPLE_RATE * SKIP_TIME).toInt() * 2
-const val DECIBEL_CUT_LINE = 39.0f
+const val DECIBEL_CUT_LINE = 45.0f
 
-const val CALCULATE_THRESHOLD = 0.56f
-const val DEFAULT_NUM_OF_RESULTS = 5
+const val CALCULATE_THRESHOLD = 0.66f
+const val DEFAULT_NUM_OF_RESULTS = 4
 const val YAMNET_MODEL = "noises_model.tflite"
 
 class TensorflowHelper @Inject constructor(
