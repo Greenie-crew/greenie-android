@@ -81,33 +81,30 @@ class TensorflowHelper @Inject constructor(
                 /**
                  * Find category by index
                  */
-                /**
-                 * Find category by index
-                 */
                 val categorySet = HashSet<NoiseCategoryEnum>()
 
                 for (category in output[0].categories) {
-                    val categoryName = findCategoryByIndex(category.index)
-                    categorySet.add(categoryName)
-//                Log.d("TensorflowHelper", "$count categories0: ${output[0].categories} ${categoryName}")
+                    findCategoryByIndex(category.index)?.let { categoryName ->
+                        categorySet.add(categoryName)
+                        Log.d(
+                            "TensorflowHelper",
+                            "$count categories0: ${output[0].categories} ${categoryName}"
+                        )
+                    }
                 }
-
-                /**
-                 * Find category by label
-                 */
 
                 /**
                  * Find category by label
                  */
                 for (category in output[1].categories) {
-                    val categoryName = findCategoryByLabel(category.label)
-                    categorySet.add(categoryName)
-//                Log.d("TensorflowHelper", "$count categories1: ${output[1].categories} ${categoryName}")
+                    findCategoryByLabel(category.label)?.let { categoryName ->
+                        categorySet.add(categoryName)
+                        Log.d(
+                            "TensorflowHelper",
+                            "$count categories1: ${output[1].categories} ${categoryName}"
+                        )
+                    }
                 }
-
-                /**
-                 * Count category
-                 */
 
                 /**
                  * Count category
@@ -132,6 +129,9 @@ class TensorflowHelper @Inject constructor(
 
             emit(sortedMap)
         }
-        Log.d("TensorflowHelper", "${count * (SKIP_TIME + SPLIT_TIME)}초간 녹음, Elapsed time: ${duration.duration.inWholeSeconds}초")
+        Log.d(
+            "TensorflowHelper",
+            "${count * (SKIP_TIME + SPLIT_TIME)}초간 녹음, Elapsed time: ${duration.duration.inWholeSeconds}초"
+        )
     }.flowOn(Dispatchers.Default)
 }

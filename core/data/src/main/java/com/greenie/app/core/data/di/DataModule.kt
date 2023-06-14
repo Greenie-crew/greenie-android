@@ -2,7 +2,9 @@ package com.greenie.app.core.data.di
 
 import com.greenie.app.core.data.repository.RecordHistoryRepoImpl
 import com.greenie.app.core.data.repository.RecordServiceRepoImpl
+import com.greenie.app.core.data.repository.FirebaseImpl
 import com.greenie.app.core.data.repository.TrackingServiceRepoImpl
+import com.greenie.app.core.domain.repository.FirebaseRepo
 import com.greenie.app.core.domain.repository.RecordHistoryRepo
 import com.greenie.app.core.domain.repository.RecordServiceRepo
 import com.greenie.app.core.domain.repository.TrackingServiceRepo
@@ -32,4 +34,10 @@ interface DataModule {
     fun bindRecordHistoryRepository(
         recordHistoryRepo: RecordHistoryRepoImpl
     ): RecordHistoryRepo
+
+    @Binds
+    @Singleton
+    fun bindTokenRepository(
+        firebaseRepo: FirebaseImpl
+    ): FirebaseRepo
 }

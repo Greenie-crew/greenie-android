@@ -2,7 +2,6 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kapt)
 }
@@ -12,12 +11,15 @@ kotlin {
 }
 
 android {
-    namespace = "com.greenie.app.service"
+    namespace = "com.greenie.app.core.sharedpreference"
     compileSdk = 33
 
     defaultConfig {
         minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.androidxComposeCompiler.get()
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -26,19 +28,17 @@ android {
 }
 
 dependencies {
-    implementation(projects.core.common)
     implementation(projects.core.model)
 
     implementation(libs.androidx.core.ktx)
 
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.messaging.ktx)
-
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    implementation(libs.gson)
 
     testImplementation(libs.junit4)
 
     androidTestImplementation(libs.androidx.test.ext)
     androidTestImplementation(libs.androidx.test.espresso.core)
+
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 }

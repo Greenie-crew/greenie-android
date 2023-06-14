@@ -33,7 +33,6 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.greenie.app.common.GREENIE_WEB_URL
-import com.greenie.app.common.UUID
 import com.greenie.app.core.designsystem.theme.AppTheme
 import kotlinx.coroutines.flow.collectLatest
 
@@ -68,7 +67,7 @@ internal fun ResultRoute(
                             .buildUpon()
                             .apply {
                                 val resultData = resultUiState.recordHistoryEntity
-                                appendQueryParameter(UUID_PARAMETER_KEY, UUID)
+                                appendQueryParameter(UUID_PARAMETER_KEY, resultUiState.userToken)
                                 appendQueryParameter(FILENAME_PARAMETER_KEY, resultData.baseInfo.fileName)
                                 appendQueryParameter(
                                     AVERAGE_PARAMETER_KEY,

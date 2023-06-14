@@ -29,10 +29,14 @@ import java.util.Calendar
 import javax.inject.Inject
 
 private const val TRACKING_SERVICE_NOTIFICATION_ID = 2
-private const val TRACKING_TIME_LIMIT = 4 * 60 * 60 * 1000L
-//private const val TRACKING_TIME_LIMIT = 10000L
-private const val LATENCY_TIME = 1 * 1000L
-//private const val LATENCY_TIME = 500L
+
+//private const val TRACKING_TIME_LIMIT = 4 * 60 * 60 * 1000L
+private const val TRACKING_TIME_LIMIT = 300000L
+
+//private const val LATENCY_TIME = 1 * 1000L
+private const val LATENCY_TIME = 500L
+
+private data class DecibelPerMinute(val minute: Int, val decibel: Float)
 
 @AndroidEntryPoint
 class TrackingForegroundService : Service() {
@@ -51,7 +55,10 @@ class TrackingForegroundService : Service() {
 
     private lateinit var timer: CountDownTimer
 
-    private lateinit var temporaryHighestDecibelPerMinute: Pair<Int, Float>
+    private var temporaryHighestDecibelPerMinute = DecibelPerMinute(
+        Calendar.getInstance().get(Calendar.MINUTE),
+        0f
+    )
 
     override fun onCreate() {
         super.onCreate()
@@ -81,6 +88,13 @@ class TrackingForegroundService : Service() {
                     }
 
                     override fun onFinish() {
+                        _trackingServiceDataSharedFlow.tryEmit(
+                            TrackingServiceData(
+                                serviceState = TrackingServiceState.END,
+                                leftTime = leftTime,
+                                loudNoiseHistory = loudNoiseHistory,
+                            )
+                        )
                         stopSelf()
                     }
                 }
@@ -88,37 +102,34 @@ class TrackingForegroundService : Service() {
                 serviceJob = CoroutineScope(Dispatchers.IO).launch {
                     val calendar = Calendar.getInstance()
                     calendar.timeInMillis = System.currentTimeMillis()
-                    temporaryHighestDecibelPerMinute = Pair(
-                        calendar.get(Calendar.MINUTE),
-                        0f
-                    )
                     val audioRecordDataflow = AudioRecordManager.startRecording(LATENCY_TIME)
                     audioRecordDataflow.collectLatest { byteArray ->
                         /**
                          * Calculate decibel value and update RecordServiceDataFlow
                          */
                         val decibelValue = AudioRecordManager.calculateDecibel(byteArray).toFloat()
-                        temporaryHighestDecibelPerMinute = if (decibelValue > temporaryHighestDecibelPerMinute.second) {
-                            Pair(
-                                temporaryHighestDecibelPerMinute.first,
-                                decibelValue
-                            )
-                        } else {
-                            Pair(
-                                temporaryHighestDecibelPerMinute.first,
-                                temporaryHighestDecibelPerMinute.second
-                            )
-                        }
+                        temporaryHighestDecibelPerMinute =
+                            if (decibelValue > temporaryHighestDecibelPerMinute.decibel) {
+                                DecibelPerMinute(
+                                    temporaryHighestDecibelPerMinute.minute,
+                                    decibelValue
+                                )
+                            } else {
+                                DecibelPerMinute(
+                                    temporaryHighestDecibelPerMinute.minute,
+                                    temporaryHighestDecibelPerMinute.decibel
+                                )
+                            }
                         calendar.timeInMillis = System.currentTimeMillis()
                         val minute = calendar.get(Calendar.MINUTE)
-                        if (minute != temporaryHighestDecibelPerMinute.first) {
+                        if (minute != temporaryHighestDecibelPerMinute.minute) {
                             loudNoiseHistory.add(
                                 NoiseHistoryData(
-                                    time = System.currentTimeMillis(),
-                                    decibel = temporaryHighestDecibelPerMinute.second
+                                    time = System.currentTimeMillis() - 60000,
+                                    decibel = temporaryHighestDecibelPerMinute.decibel
                                 )
                             )
-                            temporaryHighestDecibelPerMinute = Pair(
+                            temporaryHighestDecibelPerMinute = DecibelPerMinute(
                                 minute,
                                 0f
                             )

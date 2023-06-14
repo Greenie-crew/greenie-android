@@ -20,4 +20,9 @@
     <string name="tracking_result_description_start">총\u0020</string>
     <string name="tracking_result_description_middle">%1$d번\u0020</string>
     <string name="tracking_result_description_end">큰 소음에 노출됐어요</string>
+
+    <string name="am">오전</string>
+    <string name="pm">오후</string>
+    <string name="tracking_time">%1$s %2$2d:%3$2d\u0020</string>
+    <string name="tracking_decibel">%1$1f dB</string>
 </resources>

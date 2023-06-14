@@ -13,7 +13,7 @@ enum class NoiseCategoryEnum(
     HUMAN("human", HumanList),
     FOOT_STEP("footstep", FootStepList),
     CLASHING("clashing", ClashingList, ClashingLabelList),
-    ANIMAL("animal", AnimalList),
+    ANIMAL("animal", AnimalList, PetLabelList),
     INSTRUMENT("instrument", InstrumentList),
     NATURE("nature", NatureList),
     VEHICLE("vehicle", VehicleList, VehicleLabelList),
@@ -28,10 +28,10 @@ enum class NoiseCategoryEnum(
 //    private val FootStepLabelList = arrayOf(
 //        "발소리",
 //    )
-//    private val PetLabelList = arrayOf(
-//        "개",
-//        "고양이",
-//    )
+    private val PetLabelList = arrayOf(
+        "개",
+        "고양이",
+    )
 //    private val InstrumentLabelList = arrayOf(
 //        "악기",
 //    )
@@ -623,22 +623,22 @@ private val EtcList = arrayOf(
 )
 
 
-fun findCategoryByIndex(index: Int): NoiseCategoryEnum {
+fun findCategoryByIndex(index: Int): NoiseCategoryEnum? {
     NoiseCategoryEnum.values().forEach { noiseCategoryEnum ->
         if (noiseCategoryEnum.indexArray.contains(index)) {
             return noiseCategoryEnum
         }
     }
 //        Log.e("NoiseCategory", "Unknown index: $index")
-    return NoiseCategoryEnum.ETC
+    return null
 }
 
-fun findCategoryByLabel(label: String): NoiseCategoryEnum {
+fun findCategoryByLabel(label: String): NoiseCategoryEnum? {
     NoiseCategoryEnum.values().forEach { noiseCategoryEnum ->
         if (noiseCategoryEnum.labelArray?.contains(label) == true) {
             return noiseCategoryEnum
         }
     }
 //        Log.e("NoiseCategory", "Unknown label: $label")
-    return NoiseCategoryEnum.ETC
+    return null
 }

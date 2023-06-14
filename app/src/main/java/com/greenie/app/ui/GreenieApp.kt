@@ -260,8 +260,8 @@ private fun BoxScope.AppBottomBar(
             .wrapContentSize()
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.background)
-            .padding(8.dp)
-            .height(56.dp)
+            .padding(6.dp)
+            .height(52.dp)
             .aspectRatio(1f, matchHeightConstraintsFirst = true)
             .clip(CircleShape)
             .clickable {

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "379114814211",
+    "project_id": "greenie-c25b2",
+    "storage_bucket": "greenie-c25b2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:379114814211:android:edde682178dff2c690c736",
+        "android_client_info": {
+          "package_name": "com.greenie.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "379114814211-jubh8kr4gia51qenjdnhtl601o6eleej.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDId9cod6LrNSXFP8LE78rB-UhcmNGbIvY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "379114814211-jubh8kr4gia51qenjdnhtl601o6eleej.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

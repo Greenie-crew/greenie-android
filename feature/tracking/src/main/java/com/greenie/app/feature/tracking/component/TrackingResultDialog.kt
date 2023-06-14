@@ -11,8 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Divider
@@ -58,7 +62,7 @@ import java.util.Date
 
 
 // TODO: Make custom graph, https://proandroiddev.com/creating-graph-in-jetpack-compose-312957b11b2
-const val ThresholdValue = 80f
+const val ThresholdValue = 40f
 
 @Composable
 fun TrackingResultDialog(
@@ -173,17 +177,63 @@ fun TrackingResultDialog(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(IntrinsicSize.Min)
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
                 ) {
                     Box(modifier = Modifier
-                        .width(56.dp)
+                        .width(2.dp)
                         .fillMaxHeight()
                         .align(Alignment.TopStart)
                         .background(Colors.main_colour)
                     )
                     Column {
+                        val calendar = Calendar.getInstance()
                         repeat(thresholdMap.size) {
-//                            Text(text =)
+                            val data = thresholdMap[it]
+                            calendar.time = Date(data.time)
+                            val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM) {
+                                stringResource(
+                                    id = R.string.am
+                                )
+                            } else {
+                                stringResource(id = R.string.pm)
+                            }
+                            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+                            val minute = calendar.get(Calendar.MINUTE)
+                            Row {
+                                Box(modifier = Modifier
+                                    .size(10.dp)
+                                    .background(
+                                        color = Colors.main_colour,
+                                        shape = CircleShape
+                                    )
+                                    .align(Alignment.CenterVertically)
+                                )
+                                Text(
+                                    text = stringResource(
+                                        id = R.string.tracking_time,
+                                        amPm, hour, minute
+                                    ),
+                                    style = LocalTextStyle.current.copy(
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Normal,
+                                    ),
+                                    maxLines = 1
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(
+                                        id = R.string.tracking_decibel,
+                                        data.decibel
+                                    ),
+                                    style = LocalTextStyle.current.copy(
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Normal,
+                                        color = Colors.body
+                                    ),
+                                    maxLines = 1
+                                )
+                            }
                         }
                     }
                 }
@@ -203,53 +253,50 @@ fun TrackingResultDialog(
 internal fun TrackingGraph(
     resultData: List<NoiseHistoryData>,
 ) {
-    val splitData = remember {
-        resultData.chunked(10)
-            .map { list ->
-                NoiseHistoryData(
-                    time = list.firstOrNull()?.time ?: 0,
-                    decibel = list.map { it.decibel }.max(),
-                )
-            }
-    }
-    val chartEntryModelProducer = remember(splitData) {
+//    val splitData = remember {
+//        resultData.chunked(10)
+//            .map { list ->
+//                NoiseHistoryData(
+//                    time = list.firstOrNull()?.time ?: 0,
+//                    decibel = list.map { it.decibel }.max(),
+//                )
+//            }
+//    }
+    val chartEntryModelProducer = remember(resultData) {
         ChartEntryModelProducer(
             entriesOf(
-                *(splitData.map { it.decibel }.toTypedArray())
+                *(resultData.map { it.decibel }.toTypedArray())
             ),
         )
     }
 
-    val axisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { i, _ ->
-        val index = i.toInt()
-        if (index >= splitData.size) return@AxisValueFormatter ""
+    val axisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { _index, _ ->
+        if (resultData.isEmpty()) return@AxisValueFormatter ""
+        val index = _index.toInt()
+//        if (index >= resultData.size) return@AxisValueFormatter ""
         val calendar = Calendar.getInstance()
-        val time = splitData[index].time.run {
+        val time = resultData[index].time.run {
             calendar.time = Date(this)
-            "${calendar.get(Calendar.HOUR_OF_DAY % 12)}"
+            "${calendar.get(Calendar.HOUR_OF_DAY % 12)}:${String.format("%2d", calendar.get(Calendar.MINUTE))}"
         }
-        if (index >= 1) {
-            val beforeTime = splitData[index - 1].time.run {
-                calendar.time = Date(this)
-                "${calendar.get(Calendar.HOUR_OF_DAY % 12)}"
-            }
-            if (time == beforeTime) {
-                return@AxisValueFormatter ""
-            }
-        }
-        String.format("%2d", time.toInt())
+//        if (index >= 1) {
+//            val beforeTime = splitData[index - 1].time.run {
+//                calendar.time = Date(this)
+//                "${calendar.get(Calendar.HOUR_OF_DAY % 12)}"
+//            }
+//            if (time == beforeTime) {
+//                return@AxisValueFormatter ""
+//            }
+//        }
+//        String.format("%2d", time.toInt())
+        time
     }
 
     Chart(
         modifier = Modifier
             .fillMaxWidth()
             .height(170.dp),
-        chart = lineChart(
-            axisValuesOverrider = AxisValuesOverrider.fixed(
-                minX = 0f,
-                maxX = splitData.size.toFloat() - 1,
-            )
-        ).apply {
+        chart = lineChart().apply {
             addDecoration(
                 ThresholdLine(
                     thresholdValue = ThresholdValue,
@@ -263,7 +310,7 @@ internal fun TrackingGraph(
         },
         chartModelProducer = chartEntryModelProducer,
         bottomAxis = bottomAxis(
-            tickPosition = HorizontalAxis.TickPosition.Center(),
+            tickPosition = HorizontalAxis.TickPosition.Center(spacing = 2),
             valueFormatter = axisValueFormatter,
         ),
     )
