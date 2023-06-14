@@ -21,8 +21,14 @@
     <string name="tracking_result_description_middle">%1$d번\u0020</string>
     <string name="tracking_result_description_end">큰 소음에 노출됐어요</string>
 
+    <string name="tracking_graph_axis_x">%1$d시%2$d분</string>
+
+    <string name="decibel_mark">%1$s dB</string>
+
     <string name="am">오전</string>
     <string name="pm">오후</string>
-    <string name="tracking_time">%1$s %2$2d:%3$2d\u0020</string>
-    <string name="tracking_decibel">%1$1f dB</string>
+    <string name="tracking_time">%1$s %2$2d:%3$2d\u0020\u0020</string>
+    <string name="tracking_decibel">%1$.1f dB</string>
+
+    <string name="tracking_again_button_title">다시 검사하기</string>
 </resources>

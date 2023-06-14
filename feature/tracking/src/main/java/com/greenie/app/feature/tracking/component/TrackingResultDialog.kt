@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,13 +31,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -47,13 +50,11 @@ import com.greenie.app.feature.tracking.R
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
-import com.patrykandpatrick.vico.compose.component.shapeComponent
-import com.patrykandpatrick.vico.compose.component.textComponent
-import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
+import com.patrykandpatrick.vico.compose.chart.line.lineSpec
+import com.patrykandpatrick.vico.compose.component.shape.shader.verticalGradient
 import com.patrykandpatrick.vico.core.axis.AxisPosition
 import com.patrykandpatrick.vico.core.axis.formatter.AxisValueFormatter
 import com.patrykandpatrick.vico.core.axis.horizontal.HorizontalAxis
-import com.patrykandpatrick.vico.core.chart.decoration.ThresholdLine
 import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entriesOf
@@ -67,6 +68,7 @@ const val ThresholdValue = 80f
 @Composable
 fun TrackingResultDialog(
     onDismiss: () -> Unit,
+    onTrackingAgain: () -> Unit,
     analyzeData: List<NoiseHistoryData>,
 ) {
     val context = LocalContext.current
@@ -155,7 +157,7 @@ fun TrackingResultDialog(
                 TrackingGraph(
                     resultData = analyzeData,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = buildAnnotatedString {
                         append(stringResource(id = R.string.tracking_result_description_start))
@@ -164,7 +166,12 @@ fun TrackingResultDialog(
                                 color = Colors.main_colour,
                             )
                         ) {
-                            append(context.getString(R.string.tracking_result_description_middle, thresholdMap.size))
+                            append(
+                                context.getString(
+                                    R.string.tracking_result_description_middle,
+                                    thresholdMap.size
+                                )
+                            )
                         }
                         append(stringResource(id = R.string.tracking_result_description_end))
                     },
@@ -174,78 +181,104 @@ fun TrackingResultDialog(
                         lineHeight = 24.sp,
                     ),
                 )
+                Spacer(modifier = Modifier.height(12.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Box(modifier = Modifier
-                        .width(2.dp)
-                        .fillMaxHeight()
-                        .align(Alignment.TopStart)
-                        .background(Colors.main_colour)
-                    )
-                    Column {
-                        val calendar = Calendar.getInstance()
-                        repeat(thresholdMap.size) {
-                            val data = thresholdMap[it]
-                            calendar.time = Date(data.time)
-                            val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM) {
-                                stringResource(
-                                    id = R.string.am
-                                )
-                            } else {
-                                stringResource(id = R.string.pm)
-                            }
-                            val hour = calendar.get(Calendar.HOUR_OF_DAY)
-                            val minute = calendar.get(Calendar.MINUTE)
-                            Row {
-                                Box(modifier = Modifier
-                                    .size(10.dp)
-                                    .background(
-                                        color = Colors.main_colour,
-                                        shape = CircleShape
+                    Box(modifier = Modifier.height(IntrinsicSize.Min)) {
+                        Column {
+                            val calendar = Calendar.getInstance()
+                            repeat(thresholdMap.size) {
+                                val data = thresholdMap[it]
+                                calendar.time = Date(data.time)
+                                val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM) {
+                                    stringResource(
+                                        id = R.string.am
                                     )
-                                    .align(Alignment.CenterVertically)
-                                )
-                                Text(
-                                    text = stringResource(
-                                        id = R.string.tracking_time,
-                                        amPm, hour, minute
-                                    ),
-                                    style = LocalTextStyle.current.copy(
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Normal,
-                                    ),
-                                    maxLines = 1
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = stringResource(
-                                        id = R.string.tracking_decibel,
-                                        data.decibel
-                                    ),
-                                    style = LocalTextStyle.current.copy(
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Normal,
-                                        color = Colors.body
-                                    ),
-                                    maxLines = 1
-                                )
+                                } else {
+                                    stringResource(id = R.string.pm)
+                                }
+                                val hour = calendar.get(Calendar.HOUR_OF_DAY)
+                                val minute = calendar.get(Calendar.MINUTE)
+                                Row(
+                                    modifier = Modifier
+                                        .padding(vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(10.dp)
+                                            .background(
+                                                color = Colors.main_colour,
+                                                shape = CircleShape
+                                            )
+                                            .align(Alignment.CenterVertically)
+                                    )
+                                    Spacer(modifier = Modifier.width(18.dp))
+                                    Text(
+                                        text = buildAnnotatedString {
+                                            append(
+                                                context.getString(
+                                                    R.string.tracking_time,
+                                                    amPm,
+                                                    hour,
+                                                    minute
+                                                )
+                                            )
+                                            withStyle(SpanStyle(color = Colors.body)) {
+                                                append(
+                                                    context.getString(
+                                                        R.string.tracking_decibel,
+                                                        data.decibel
+                                                    )
+                                                )
+                                            }
+                                        },
+                                        style = LocalTextStyle.current.copy(
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Normal,
+                                        ),
+                                        maxLines = 1
+                                    )
+                                }
                             }
                         }
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 20.dp)
+                                .padding(start = 4.dp)
+                                .width(width = 2.dp)
+                                .fillMaxHeight()
+                                .background(color = Colors.main_colour)
+                        )
                     }
                 }
             }
-            Row(
+
+            Button(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Colors.bg
+                ),
+                onClick = onTrackingAgain,
+                shape = RectangleShape,
             ) {
-                // TODO: Add reset button
+                Text(
+                    text = stringResource(id = R.string.tracking_again_button_title),
+                    style = LocalTextStyle.current.copy(
+                        color = Colors.headline,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                    ),
+                )
             }
         }
+
     }
 }
 
@@ -253,15 +286,19 @@ fun TrackingResultDialog(
 internal fun TrackingGraph(
     resultData: List<NoiseHistoryData>,
 ) {
-//    val splitData = remember {
-//        resultData.chunked(10)
-//            .map { list ->
-//                NoiseHistoryData(
-//                    time = list.firstOrNull()?.time ?: 0,
-//                    decibel = list.map { it.decibel }.max(),
-//                )
-//            }
-//    }
+    val context = LocalContext.current
+
+    val marker = rememberMarker()
+    val markerMaps = remember(resultData) {
+        resultData.mapIndexedNotNull() { index, data ->
+            if (data.decibel > ThresholdValue) {
+                index.toFloat() to marker
+            } else {
+                null
+            }
+        }.toMap()
+    }
+
     val chartEntryModelProducer = remember(resultData) {
         ChartEntryModelProducer(
             entriesOf(
@@ -270,48 +307,80 @@ internal fun TrackingGraph(
         )
     }
 
-    val axisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { _index, _ ->
-        if (resultData.isEmpty()) return@AxisValueFormatter ""
-        val index = _index.toInt()
-//        if (index >= resultData.size) return@AxisValueFormatter ""
+    val axisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { index, value ->
         val calendar = Calendar.getInstance()
-        val time = resultData[index].time.run {
-            calendar.time = Date(this)
-            "${calendar.get(Calendar.HOUR_OF_DAY % 12)}:${String.format("%2d", calendar.get(Calendar.MINUTE))}"
+        resultData[index.toInt()].time.let { millis ->
+            calendar.timeInMillis = millis
+            context.getString(
+                R.string.tracking_graph_axis_x,
+                calendar.get(Calendar.HOUR_OF_DAY % 12),
+                calendar.get(Calendar.MINUTE)
+            )
         }
-//        if (index >= 1) {
-//            val beforeTime = splitData[index - 1].time.run {
-//                calendar.time = Date(this)
-//                "${calendar.get(Calendar.HOUR_OF_DAY % 12)}"
-//            }
-//            if (time == beforeTime) {
-//                return@AxisValueFormatter ""
-//            }
-//        }
-//        String.format("%2d", time.toInt())
-        time
     }
 
-    Chart(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(170.dp),
-        chart = lineChart().apply {
-            addDecoration(
-                ThresholdLine(
-                    thresholdValue = ThresholdValue,
-                    lineComponent = shapeComponent(color = Color.Cyan),
-                    labelComponent = textComponent(
-                        Color.Black,
-                        padding = dimensionsOf(horizontal = 8.dp)
-                    ),
+    if (resultData.isNotEmpty()) {
+        val thresholdLine = rememberThresholdLine(ThresholdValue)
+        val lineSpec = lineSpec(
+            lineColor = Colors.main_colour,
+            lineBackgroundShader = verticalGradient(
+                arrayOf(Colors.main_colour.copy(0.5f), Colors.main_colour.copy(alpha = 0f)),
+            ),
+        )
+
+        Chart(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(170.dp),
+            chart = lineChart(
+                persistentMarkers = markerMaps,
+                lines = remember { listOf(lineSpec) },
+                axisValuesOverrider = AxisValuesOverrider.fixed(maxY = 120f),
+                decorations = remember(thresholdLine) { listOf(thresholdLine) }
+            ),
+            chartModelProducer = chartEntryModelProducer,
+            bottomAxis = bottomAxis(
+                tickPosition = HorizontalAxis.TickPosition.Center(offset = 1, spacing = 10),
+                valueFormatter = axisValueFormatter,
+                guideline = null
+            ),
+        )
+    }
+}
+
+@Preview
+@Composable
+internal fun TrackingResultDialogPreview() {
+    TrackingResultDialog(
+        onDismiss = {},
+        onTrackingAgain = {},
+        analyzeData = mutableListOf<NoiseHistoryData>().apply {
+            repeat(3) {
+                addAll(
+                    listOf(
+                        NoiseHistoryData(
+                            time = 1686736069887,
+                            decibel = 50f,
+                        ),
+                        NoiseHistoryData(
+                            time = 1686736129887,
+                            decibel = 60f,
+                        ),
+                        NoiseHistoryData(
+                            time = 1686736189887,
+                            decibel = 93f,
+                        ),
+                        NoiseHistoryData(
+                            time = 1686736249887,
+                            decibel = 53f,
+                        ),
+                        NoiseHistoryData(
+                            time = 1686736309887,
+                            decibel = 73f,
+                        ),
+                    )
                 )
-            )
-        },
-        chartModelProducer = chartEntryModelProducer,
-        bottomAxis = bottomAxis(
-            tickPosition = HorizontalAxis.TickPosition.Center(spacing = 2),
-            valueFormatter = axisValueFormatter,
-        ),
+            }
+        }
     )
 }

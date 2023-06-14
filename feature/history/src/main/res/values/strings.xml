@@ -7,8 +7,10 @@
     <string name="history_category_tag">카테고리</string>
 
     <string name="history_category_detail_month">%1$d월</string>
+    <string name="history_category_detail_day">%1$d일</string>
 
     <string name="history_item_decibel">%1$.1fdB</string>
+    <string name="history_item_decibel_integer">%1$ddB</string>
     <string name="history_item_result_button">분석결과</string>
     <string name="history_item_analyze_button">분석하기</string>
 

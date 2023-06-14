@@ -30,10 +30,7 @@ import javax.inject.Inject
 
 private const val TRACKING_SERVICE_NOTIFICATION_ID = 2
 
-//private const val TRACKING_TIME_LIMIT = 4 * 60 * 60 * 1000L
-private const val TRACKING_TIME_LIMIT = 3000000L
-
-//private const val LATENCY_TIME = 1 * 1000L
+private const val TRACKING_TIME_LIMIT = 50 * 60 * 1000L
 private const val LATENCY_TIME = 100L
 
 private data class DecibelPerMinute(val minute: Int, val decibel: Float)
@@ -88,20 +85,12 @@ class TrackingForegroundService : Service() {
                     }
 
                     override fun onFinish() {
-                        _trackingServiceDataSharedFlow.tryEmit(
-                            TrackingServiceData(
-                                serviceState = TrackingServiceState.END,
-                                leftTime = leftTime,
-                                loudNoiseHistory = loudNoiseHistory,
-                            )
-                        )
                         stopSelf()
                     }
                 }
                 timer.start()
                 serviceJob = CoroutineScope(Dispatchers.IO).launch {
                     val calendar = Calendar.getInstance()
-                    calendar.timeInMillis = System.currentTimeMillis()
                     val audioRecordDataflow = AudioRecordManager.startRecording(LATENCY_TIME)
                     audioRecordDataflow.collectLatest { byteArray ->
                         /**
@@ -169,6 +158,12 @@ class TrackingForegroundService : Service() {
                 serviceJob?.cancelAndJoin()
             }
             AudioRecordManager.stopRecording()
+            loudNoiseHistory.add(
+                NoiseHistoryData(
+                    time = System.currentTimeMillis() - 60000,
+                    decibel = temporaryHighestDecibelPerMinute.decibel
+                )
+            )
             _trackingServiceDataSharedFlow.emit(
                 TrackingServiceData(
                     serviceState = TrackingServiceState.END,

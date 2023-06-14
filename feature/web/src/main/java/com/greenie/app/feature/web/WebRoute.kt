@@ -2,7 +2,6 @@ package com.greenie.app.feature.web
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -48,13 +47,6 @@ internal fun WebScreen(
     webViewState: WebViewState,
     webViewNavigator: WebViewNavigator,
 ) {
-
-//    BackHandler(
-//        enabled = webViewNavigator.canGoBack,
-//    ) {
-//        webViewNavigator.navigateBack()
-//    }
-
     val coroutineScope = rememberCoroutineScope()
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
@@ -68,18 +60,16 @@ internal fun WebScreen(
                 view: WebView,
                 request: WebResourceRequest
             ): Boolean {
-                Log.d("WebRoute", request.url.toString())
-
                 if (request.url.scheme == "intent") {
-
-                    // Intent 생성
-                    val intent =
-                        Intent.parseUri(request.url.toString(), Intent.URI_INTENT_SCHEME)
-
+                    val intent = Intent.parseUri(request.url.toString(), Intent.URI_INTENT_SCHEME)
                     context.startActivity(intent)
                     return true
-
+                } else if (request.url.scheme == "tel") {
+                    val intent = Intent(Intent.ACTION_DIAL, request.url)
+                    context.startActivity(intent)
+                    return true
                 }
+
                 // 나머지 서비스 로직 구현
                 return false
             }
