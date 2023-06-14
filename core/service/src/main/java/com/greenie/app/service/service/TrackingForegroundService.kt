@@ -31,10 +31,10 @@ import javax.inject.Inject
 private const val TRACKING_SERVICE_NOTIFICATION_ID = 2
 
 //private const val TRACKING_TIME_LIMIT = 4 * 60 * 60 * 1000L
-private const val TRACKING_TIME_LIMIT = 300000L
+private const val TRACKING_TIME_LIMIT = 3000000L
 
 //private const val LATENCY_TIME = 1 * 1000L
-private const val LATENCY_TIME = 500L
+private const val LATENCY_TIME = 100L
 
 private data class DecibelPerMinute(val minute: Int, val decibel: Float)
 

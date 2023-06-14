@@ -62,7 +62,7 @@ import java.util.Date
 
 
 // TODO: Make custom graph, https://proandroiddev.com/creating-graph-in-jetpack-compose-312957b11b2
-const val ThresholdValue = 40f
+const val ThresholdValue = 80f
 
 @Composable
 fun TrackingResultDialog(
