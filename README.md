@@ -18,15 +18,14 @@
 
 ## 📱 Feature ##
 
-### 소음원 AI 분석 및 녹음 ###
-
-![feature](screenshots/record.gif)<br>
-
-### 트래킹 검사 기능 ###
-
-![feature](screenshots/tracking.gif)<br>
-
-![feature](screenshots/tracking2.gif)<br>
+|||
+| :-: | :-: |
+| 소음원 AI 분석 및 녹음 | 트래킹 검사 기능 |
+|![feature](screenshots/record.gif)<br>|![feature](screenshots/tracking.gif)<br>|
+| 트래킹 검사 기능 | 녹음 기록 |
+|![feature](screenshots/tracking2.gif)<br>|![feature](screenshots/history.gif)<br>|
+| 웹뷰 |  |
+|![feature](screenshots/web.gif)<br>||
 
 ## ⚡Stack
 <img src="https://img.shields.io/badge/Kotlin1.8-7F52FF?style=for-the-badge&logo=Kotlin&logoColor=white"> <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=Android&logoColor=white"> <img src="https://img.shields.io/badge/Jetpack Compose-4285F4?style=for-the-badge&logo=Jetpack Compose&logoColor=white"> <img src="https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=Gradle&logoColor=white">
