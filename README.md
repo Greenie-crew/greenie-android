@@ -105,6 +105,14 @@ Dagger hilt를 통한 DI를 활용하여 UI에서 필요한 비즈니스 로직�
     - [Yamnet](https://tfhub.dev/google/yamnet/1)
     - [도시 소리 데이터](https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=realm&dataSetSn=585)
 
+- 개발을 진행하며 어려웠던 점은 없었나요?
+    - 첫 번째로, AI 분석을 위한 Tensorflow를 안드로이드에서 사용하기 위해 Tensorflow model maker를 이용하여 모델을 학습시키는데 오류가 발생하여 2~3일 정도 소요되었습니다.
+      저희가 학습시킬 데이터는 AI Hub를 통해 구한 '도시 소리 데이터'였는데, 일부 파일은 학습 요건(16bit, Mono)에 충족하지 않아 학습에 오류가 발생했고,
+      Shell script를 직접 작성하여 변환 후, Yamnet 모델 파일에 새로운 카테고리로 위의 데이터를 학습시켜 사용하였습니다.
+      [텐서플로우 모델 학습 관련 소스](https://github.com/Greenie-crew/tensorflow-model-maker-script)
+    - 두 번째는, 아마 기획쪽에서 신경을 많이 쓰시지 않았을까 싶습니다. 개인간 일정이 다르다보니 회의 일정을 조율하는 점과, 개발간에 내용 전달하는데에 어려우셨을텐데 예상보다 수월하게 돌아간듯 하여 이 부분에서 고생이 많으셨다고 말씀드리고 싶습니다.
+    - 세 번째는, 제 스스로를 파악하는 일이였습니다. 일정을 언제까지 마감할 수 있는지, 어느 정도 기술을 구현할 수 있는지 확인하는 좋은 경험이였습니다.
+
 ## ✏️ Release Note
 
 2023.06.04 (일)
