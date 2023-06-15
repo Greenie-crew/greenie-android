@@ -29,7 +29,6 @@ dependencies {
     implementation(projects.core.database)
     implementation(projects.core.domain)
     implementation(projects.core.model)
-    implementation(projects.core.network)
     implementation(projects.core.service)
     implementation(projects.core.sharedpreference)
 

@@ -1,1 +1,0 @@
--keep class com.greenie.app.core.data.model.** { *; }
