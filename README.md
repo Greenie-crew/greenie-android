@@ -26,6 +26,8 @@
   * 의존성 주입 라이브러리로 DI를 통한 모듈 분리를 위해 사용합니다.
 * Retrofit2
   * 안드로이드에서 범용적으로 사용하는 API 통신을 위한 네트워크 라이브러리입니다.
+* Room
+  * 녹음 기록 관리를 위한 ORM 라이브러리입니다.
 * Flow
   * 비동기 데이터 흐름을 관리하기 위한 라이브러리입니다.
 
@@ -45,6 +47,7 @@ Dagger hilt를 통한 DI를 활용하여 UI에서 필요한 비즈니스 로직�
 |`feature:home`<br>`feature:record`<br>`feature:tracking`<br>`feature:history`<br>`feature:result`<br>`feature:web`|특정 기능을 위한 UI 및 ViewModel을 포함합니다.<ul><li>`feature:home` 앱의 기능들을 실행할 수 있는 진입점 UI입니다.</li><li>`feature:record` 녹음 서비스 실행 및 현재 데시벨을 확인하고 분석/저장하는 기능을 제공하는 UI입니다.</li><li>`feature:tracking` 장시간 녹음을 통해 큰소리가 발생한 시간을 기록하고 결과를 제공하는 UI입니다.</li><li>`feature:history` 소음 분석 기록을 제공하는 UI입니다.</li><li>`feature:result` AI를 통한 소음원 분석 결과를 가져오는 동안 표시하는 UI입니다.</li><li>`feature:web` 앱에서 접근하는 웹에 동일한 인터페이스와 기능을 제공하는 UI입니다.</li></ul>|
 |`core:common`|앱에서 자주 사용하는 기능 클래스를 포함합니다.| 
 |`core:data`|Database 및 Sharedpreference로 부터 앱 데이터를 가져오거나 저장합니다.|
+|`cord:database`|녹음 기록을 조회/저장하기 위해 ORM 라이브러리를 사용하여 DB를 관리합니다.|
 |`core:designsystem`|UI 관련 Theme, Color, TextStyle, Shape 등을 포함하는 모듈입니다.|
 |`core:domain`|Clean architecture의 Domain layer에 해당하는 영역으로 종속성 주입(DI)를 위한 인터페이스와 비즈니스 로직을 포함한 UseCase를 포함합니다.|
 |`core:model`|앱 전체에서 공통으로 사용되는 모델 클래스입니다.|
@@ -71,7 +74,16 @@ Dagger hilt를 통한 DI를 활용하여 UI에서 필요한 비즈니스 로직�
 - 장시간 녹음 시, java.lang.OutOfMemoryError 가 발생할수도 있나요?
     - 초기에는 ByteArray를 지역변수를 할당하여 Stack 메모리 위에 적재되도록 구현하였으나, 장시간 녹음 시 OutOfMemoryError가 발생하였습니다. 따라서 현재는 App의 Data 영역에 파일을 생성하여 InputStream/OutputStream을 통해 wav로 Export/Import 하도록 수정하였습니다.
 
-## ✏️ Release Note ##
+## ❓Question ##
+
+- AI 분석을 위해 사용한 모델은 어떤 것인가요?
+    - TensorFlow Hub에서 제공하는 yamnet모델을 사용하였습니다.
+    - YAMNet은 오디오 파형을 입력으로 받아 AudioSet 온톨로지의 521개 오디오 이벤트 각각에 대해 독립적인 예측을 하는 오디오 이벤트 분류기입니다. 이 모델은 MobileNet v1 아키텍처를 사용하며 AudioSet 코퍼스를 사용하여 학습되었습니다. 
+    - 또한 추가적으로 애완동물, 대화 소리 등의 정확도를 높히기 위해 AI Hub에서 제공하는 '도시 소리 데이터'를 추가적으로 학습시켰습니다.
+    - [Yamnet](https://tfhub.dev/google/yamnet/1)
+    - [도시 소리 데이터](https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=realm&dataSetSn=585)
+
+## ✏️ Release Note ##
 
 2023.06.04 (일)
 
