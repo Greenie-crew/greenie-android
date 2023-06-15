@@ -1,6 +1,11 @@
 # Greenie Project
+
 ## Introduction
+
 '잡았다! 소음'은 새싹톤 '그리니' 팀에서 일상 생활에서의 생활 소음 문제를 해결하기 위해 개발한 소음 분석 및 분쟁 해결 서비스입니다.
+
+최소 사양: Android 7.0
+구동 조건: Google Play Service, 마이크 내장
 
 ## 📱 Feature ##
 
