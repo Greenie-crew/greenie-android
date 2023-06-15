@@ -1,11 +1,20 @@
 # Greenie Project
 
-## Introduction
+## 🚥 Introduction
 
-'잡았다! 소음'은 새싹톤 '그리니' 팀에서 일상 생활에서의 생활 소음 문제를 해결하기 위해 개발한 소음 분석 및 분쟁 해결 서비스입니다.
+일상 생활에서 발생하는 생활 소음의 원인을 분석하고, 해결 방안을 마련할 수 있도록 도움을 주기 위해
 
-최소 사양: Android 7.0
-구동 조건: Google Play Service, 마이크 내장
+2023 새싹톤 Greenie팀에서 제작한 서비스입니다.
+
+<br>
+
+운영체제: Android 7.0 이상
+
+하드웨어 사양: 마이크, 디스플레이 내장
+
+구동 조건: Google play service, 네트워크 연결 
+
+* 다크모드는 지원하지 않습니다.
 
 ## 📱 Feature ##
 
@@ -19,10 +28,10 @@
 
 ![feature](screenshots/tracking2.gif)<br>
 
-## ⚡Stack ##
+## ⚡Stack
 <img src="https://img.shields.io/badge/Kotlin1.8-7F52FF?style=for-the-badge&logo=Kotlin&logoColor=white"> <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=Android&logoColor=white"> <img src="https://img.shields.io/badge/Jetpack Compose-4285F4?style=for-the-badge&logo=Jetpack Compose&logoColor=white"> <img src="https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=Gradle&logoColor=white">
 
-## 📕 Used library ##
+## 📕 Used library
 * Jetpack Compose
   * 명령형 UI 라이브러리입니다.
 * Tensorflow lite
@@ -36,7 +45,7 @@
 * Flow
   * 비동기 데이터 흐름을 관리하기 위한 라이브러리입니다.
 
-## 🐾 Architecture ##
+## 🐾 Architecture
 Clean Architecture 및 MVVM 아키텍처를 멀티모듈 구조에 적용하여, 크게 Data -> Domain <- UI 의 구조를 가지며,
 Dagger hilt를 통한 DI를 활용하여 UI에서 필요한 비즈니스 로직을 호출할 수 있습니다.
 
@@ -44,7 +53,7 @@ Dagger hilt를 통한 DI를 활용하여 UI에서 필요한 비즈니스 로직�
 * core: 앱 구동간에 필요한 코드 및 특수 목적을 위한 공통 라이브러리 모듈입니다. Core 모듈 내 타 모듈에 대한 종속성을 가지지 않습니다.
 * feature: 앱에서 단일 책임을 처리하도록 범위가 정해진 기능 모듈입니다. Core 내의 모듈만 의존합니다.
 
-## 🏗 Module ##
+## 🏗 Module
 
 |Name|Responsibilities|
 | :- | :- |
@@ -59,7 +68,7 @@ Dagger hilt를 통한 DI를 활용하여 UI에서 필요한 비즈니스 로직�
 |`core:service`|소음 분석 및 트래킹 기능을 위한 Foreground service를 포함합니다. |
 |`core:ui`|앱에서 공통적으로 사용되는 UI 구성요소 및 리소스 모음입니다.|
 
-## ❗Troubleshooting ##
+## ❗Troubleshooting
 
 - 오디오 관련 라이브러리 MediaRecorder VS AudioRecord ?
     - MediaRecorder는 음성 및 영상을 손쉽게 녹음, 녹화 할 수 있는 인터페이스를 제공하지만, 인코딩 된 파일을 제공하는 이유로 녹음된 파형을 실시간으로 분석할 수 없다는 문제가 있습니다.
@@ -88,7 +97,7 @@ Dagger hilt를 통한 DI를 활용하여 UI에서 필요한 비즈니스 로직�
 - 장시간 녹음 시, java.lang.OutOfMemoryError 가 발생할수도 있나요?
     - 초기에는 ByteArray를 지역변수를 할당하여 Stack 메모리 위에 적재되도록 구현하였으나, 장시간 녹음 시 OutOfMemoryError가 발생하였습니다. 따라서 현재는 App의 Data 영역에 파일을 생성하여 InputStream/OutputStream을 통해 wav로 Export/Import 하도록 수정하였습니다.
 
-## ❓Question ##
+## ❓Question
 
 - AI 분석을 위해 사용한 모델은 어떤 것인가요?
     - TensorFlow Hub에서 제공하는 yamnet모델을 사용하였습니다.
@@ -97,7 +106,7 @@ Dagger hilt를 통한 DI를 활용하여 UI에서 필요한 비즈니스 로직�
     - [Yamnet](https://tfhub.dev/google/yamnet/1)
     - [도시 소리 데이터](https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=realm&dataSetSn=585)
 
-## ✏️ Release Note ##
+## ✏️ Release Note
 
 2023.06.04 (일)
 
