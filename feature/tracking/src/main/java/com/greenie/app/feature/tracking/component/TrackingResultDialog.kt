@@ -355,32 +355,58 @@ internal fun TrackingResultDialogPreview() {
         onDismiss = {},
         onTrackingAgain = {},
         analyzeData = mutableListOf<NoiseHistoryData>().apply {
-            repeat(3) {
-                addAll(
-                    listOf(
-                        NoiseHistoryData(
-                            time = 1686736069887,
-                            decibel = 50f,
-                        ),
-                        NoiseHistoryData(
-                            time = 1686736129887,
-                            decibel = 60f,
-                        ),
-                        NoiseHistoryData(
-                            time = 1686736189887,
-                            decibel = 93f,
-                        ),
-                        NoiseHistoryData(
-                            time = 1686736249887,
-                            decibel = 53f,
-                        ),
-                        NoiseHistoryData(
-                            time = 1686736309887,
-                            decibel = 73f,
-                        ),
-                    )
+            addAll(
+                listOf(
+                    NoiseHistoryData(
+                        time = 1686736069887,
+                        decibel = 50f,
+                    ),
+                    NoiseHistoryData(
+                        time = 1686736129887,
+                        decibel = 60f,
+                    ),
+                    NoiseHistoryData(
+                        time = 1686736189887,
+                        decibel = 93f,
+                    ),
+                    NoiseHistoryData(
+                        time = 1686736249887,
+                        decibel = 53f,
+                    ),
+                    NoiseHistoryData(
+                        time = 1686736309887,
+                        decibel = 73f,
+                    ),
+                    NoiseHistoryData(
+                        time = 1686736369887,
+                        decibel = 81f,
+                    ),
+                    NoiseHistoryData(
+                        time = 1686736429887,
+                        decibel = 93f,
+                    ),
+                    NoiseHistoryData(
+                        time = 1686736489887,
+                        decibel = 37f,
+                    ),
+                    NoiseHistoryData(
+                        time = 1686736549887,
+                        decibel = 53f,
+                    ),
+                    NoiseHistoryData(
+                        time = 1686736609887,
+                        decibel = 85f,
+                    ),
+                    NoiseHistoryData(
+                        time = 1686736669887,
+                        decibel = 93f,
+                    ),
+                    NoiseHistoryData(
+                        time = 1686736729887,
+                        decibel = 53f,
+                    ),
                 )
-            }
+            )
         }
     )
 }

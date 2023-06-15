@@ -21,7 +21,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
 const val SPLIT_TIME = 0.1f
-const val SKIP_TIME = 0.9f
+const val SKIP_TIME = 0.2f
 val SPLIT_SHORT_SIZE = (SAMPLE_RATE * SPLIT_TIME).toInt()
 val SPLIT_BYTE_SIZE = SPLIT_SHORT_SIZE * 2
 val SKIP_BYTE_SIZE = (SAMPLE_RATE * SKIP_TIME).toInt() * 2
