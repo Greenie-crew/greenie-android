@@ -14,10 +14,6 @@
 
 ![feature](screenshots/tracking2.gif)<br>
 
-### 소음 기록 ###
-
-![feature](screenshots/history.gif)<br>
-
 ## ⚡Stack ##
 <img src="https://img.shields.io/badge/Kotlin1.8-7F52FF?style=for-the-badge&logo=Kotlin&logoColor=white"> <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=Android&logoColor=white"> <img src="https://img.shields.io/badge/Jetpack Compose-4285F4?style=for-the-badge&logo=Jetpack Compose&logoColor=white"> <img src="https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=Gradle&logoColor=white">
 
