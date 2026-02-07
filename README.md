@@ -46,42 +46,118 @@
 
 ## 🔄 App FlowChart
 
+### 앱 네비게이션
+
 ```mermaid
 flowchart TD
     Start([앱 실행]) --> Activity[GreenieActivity]
-    Activity --> Permission{권한 요청<br/>마이크 · 포그라운드 서비스 · 알림}
+    Activity --> Permission{권한 요청<br/>RECORD_AUDIO<br/>FOREGROUND_SERVICE<br/>POST_NOTIFICATIONS}
     Permission -->|허용| Home[Home 화면]
 
-    Home -->|녹음 버튼 FAB| Record[Record 화면]
+    subgraph BottomNav ["Bottom Navigation"]
+        Home
+        History[History 화면]
+    end
+
+    Home -->|FAB 버튼| Record[Record 화면]
     Home -->|트래킹 버튼| Tracking[Tracking 화면]
-    Home -->|하단 네비게이션| History[History 화면]
-    Home -->|웹 링크| WebContent[WebView<br/>소음 팁 · 상담 · 건강 정보]
+    Home -->|웹 링크| Web[WebView]
 
     Record -.-|ServiceState 관리<br/>동시 실행 불가| Tracking
 
-    subgraph recording ["녹음 및 AI 분석"]
-        Record --> RecordService[RecordForegroundService 시작]
-        RecordService --> AudioCapture[AudioRecord<br/>실시간 PCM 데이터 수집]
-        AudioCapture --> DecibelCalc[데시벨 연산<br/>실시간 · 최소 · 평균 · 최대]
-        DecibelCalc -->|녹음 종료| WavConvert[PCM → WAV 변환]
-        WavConvert --> SaveDB[(Room DB 저장)]
-        SaveDB --> TFAnalyze[TensorFlow Lite 분석<br/>YAMNet 모델]
-        TFAnalyze --> Classify[소음원 분류<br/>14개 카테고리 · 정확도 66% 이상]
-        Classify --> ResultWeb[분석 결과<br/>WebView 표시]
+    Record -->|저장 완료| Result[Result 화면]
+    History -->|기록 선택| Result
+    Result -->|분석 완료| Web
+    Web -->|Bridge Interface<br/>onNavigateToRecord| Record
+```
+
+### 소음 녹음
+
+```mermaid
+flowchart TD
+    Start([녹음 시작]) --> Service[RecordForegroundService 실행<br/>Foreground Notification 표시]
+    Service --> Init[AudioRecord 초기화<br/>16kHz · Mono · 16bit PCM]
+    Init --> Capture[오디오 버퍼 수집<br/>실시간 ShortArray]
+
+    Capture --> Decibel[데시벨 연산<br/>p = maxAmplitude / 51805.5336<br/>dB = 20 × log₁₀ p/p₀]
+    Decibel --> Stats[통계 갱신<br/>실시간 · 최소 · 평균 · 최대]
+    Stats --> Emit[RecordServiceData 방출<br/>SharedFlow → DataSource → Repository → ViewModel]
+    Emit --> UI[UI 실시간 갱신<br/>데시벨 미터 표시]
+
+    Capture --> BufferCheck{버퍼 크기<br/>> 500,000?}
+    BufferCheck -->|Yes| Flush[PCM 파일로 flush<br/>App Data 영역]
+    Flush --> Capture
+    BufferCheck -->|No| Capture
+
+    Stats -->|녹음 종료| Action{사용자 액션}
+    Action -->|저장 · 분석| Convert[PCM → WAV 변환<br/>RIFF 헤더 추가]
+    Convert --> Delete[PCM 파일 삭제]
+    Delete --> Save[(Room DB 저장<br/>파일명 · min/avg/max dB · 생성일)]
+    Save --> Navigate([Result 화면으로 이동])
+```
+
+### AI 소음원 분석 파이프라인
+
+```mermaid
+flowchart LR
+    subgraph input ["입력"]
+        WAV[WAV 파일 로드<br/>헤더 44byte Skip]
     end
 
-    subgraph tracking ["트래킹 검사"]
-        Tracking --> TrackService[TrackingForegroundService 시작]
-        TrackService --> LongMonitor[장시간 모니터링<br/>최대 50분]
-        LongMonitor --> PerMinute[분당 최대 dB 기록]
-        PerMinute --> TrackResult[트래킹 결과 화면]
+    subgraph preprocess ["전처리"]
+        Split[0.1초 단위 분할<br/>0.9초 간격 Skip]
+        Filter{데시벨<br/>>= 45dB?}
+        Split --> Filter
+        Filter -->|No| Split
     end
 
-    subgraph history ["기록 조회"]
-        History --> DateSearch[날짜별 녹음 기록 조회]
-        DateSearch -->|재분석| TFAnalyze
-        DateSearch -->|결과 확인| ResultWeb
+    subgraph inference ["TF Lite 추론"]
+        Load[TensorAudio 로드]
+        Classify[AudioClassifier<br/>YAMNet 모델 추론]
+        Map[14개 소음 카테고리 매핑<br/>정확도 >= 66% 필터링]
+        Load --> Classify --> Map
     end
+
+    subgraph output ["결과"]
+        Score[카테고리별 점수 누적]
+        Percent[백분율 환산 · 정렬]
+        DB[(Room DB 저장)]
+        WebView[WebView 결과 표시<br/>Query Parameter 전달<br/>uid · filename · avg · 카테고리 점수]
+        Score --> Percent --> DB --> WebView
+    end
+
+    WAV --> Split
+    Filter -->|Yes| Load
+    Map --> Score
+```
+
+### 트래킹 검사
+
+```mermaid
+flowchart TD
+    Start([트래킹 시작]) --> Service[TrackingForegroundService 실행<br/>Foreground Notification 표시]
+    Service --> Timer[CountDownTimer 시작<br/>최대 50분]
+    Service --> Audio[AudioRecord 시작<br/>100ms 주기 수집]
+
+    Audio --> Decibel[데시벨 연산]
+    Decibel --> Compare{현재 분의<br/>최대 dB 갱신?}
+    Compare -->|Yes| Update[분당 최대 dB 업데이트]
+    Compare -->|No| Audio
+    Update --> Audio
+
+    Timer --> MinuteCheck{분 변경?}
+    MinuteCheck -->|Yes| SaveMinute[해당 분의 최대 dB 기록<br/>NoiseHistoryData에 저장]
+    SaveMinute --> Timer
+    MinuteCheck -->|No| Timer
+
+    Timer -->|시간 종료| End[TrackingServiceState.END]
+
+    subgraph state ["상태 전이"]
+        direction LR
+        IDLE --> TRACKING --> PAUSE --> TRACKING2[TRACKING] --> END2[END]
+    end
+
+    End --> Result([트래킹 결과 화면<br/>시간대별 최대 dB 표시])
 ```
 
 ## 🐾 Architecture
