@@ -49,115 +49,149 @@
 ### 앱 네비게이션
 
 ```mermaid
-flowchart TD
-    Start([앱 실행]) --> Activity[GreenieActivity]
-    Activity --> Permission{권한 요청<br/>RECORD_AUDIO<br/>FOREGROUND_SERVICE<br/>POST_NOTIFICATIONS}
-    Permission -->|허용| Home[Home 화면]
+sequenceDiagram
+    actor User
+    participant Home
+    participant Record
+    participant Tracking
+    participant History
+    participant Result
+    participant WebView
 
-    subgraph BottomNav ["Bottom Navigation"]
-        Home
-        History[History 화면]
+    User->>Home: 앱 실행
+
+    alt 소음 녹음
+        Home->>Record: FAB 버튼
+        Record->>Result: 녹음 저장 완료
+        Result->>WebView: AI 분석 결과 표시
+    else 트래킹 검사
+        Home->>Tracking: 트래킹 버튼
+        Tracking-->>Tracking: 결과 화면 표시
+    else 기록 조회
+        Home->>History: 하단 네비게이션 탭
+        History->>Result: 기록 선택
+        Result->>WebView: 분석 결과 표시
+    else 웹 콘텐츠
+        Home->>WebView: 소음 팁 · 상담 · 건강 정보
     end
 
-    Home -->|FAB 버튼| Record[Record 화면]
-    Home -->|트래킹 버튼| Tracking[Tracking 화면]
-    Home -->|웹 링크| Web[WebView]
-
-    Record -.-|ServiceState 관리<br/>동시 실행 불가| Tracking
-
-    Record -->|저장 완료| Result[Result 화면]
-    History -->|기록 선택| Result
-    Result -->|분석 완료| Web
-    Web -->|Bridge Interface<br/>onNavigateToRecord| Record
+    Note over Record,Tracking: ServiceState 관리<br/>녹음과 트래킹 동시 실행 불가
 ```
 
 ### 소음 녹음
 
 ```mermaid
-flowchart TD
-    Start([녹음 시작]) --> Service[RecordForegroundService 실행<br/>Foreground Notification 표시]
-    Service --> Init[AudioRecord 초기화<br/>16kHz · Mono · 16bit PCM]
-    Init --> Capture[오디오 버퍼 수집<br/>실시간 ShortArray]
+sequenceDiagram
+    actor User
+    participant UI as Record 화면
+    participant Service as RecordForegroundService
+    participant Audio as AudioRecord
+    participant File as RecordFileManager
+    participant DB as Room DB
 
-    Capture --> Decibel[데시벨 연산<br/>p = maxAmplitude / 51805.5336<br/>dB = 20 × log₁₀ p/p₀]
-    Decibel --> Stats[통계 갱신<br/>실시간 · 최소 · 평균 · 최대]
-    Stats --> Emit[RecordServiceData 방출<br/>SharedFlow → DataSource → Repository → ViewModel]
-    Emit --> UI[UI 실시간 갱신<br/>데시벨 미터 표시]
+    User->>UI: 녹음 시작
+    UI->>Service: startRecordService()
+    Service->>Audio: 초기화 (16kHz · Mono · 16bit)
 
-    Capture --> BufferCheck{버퍼 크기<br/>> 500,000?}
-    BufferCheck -->|Yes| Flush[PCM 파일로 flush<br/>App Data 영역]
-    Flush --> Capture
-    BufferCheck -->|No| Capture
+    loop 실시간 녹음
+        Audio->>Service: PCM ShortArray 데이터
+        Service->>Service: 데시벨 연산 (20 × log₁₀(p/p₀))
+        Service->>UI: RecordServiceData (SharedFlow)
+        UI->>UI: 데시벨 미터 갱신 (실시간 · 최소 · 평균 · 최대)
 
-    Stats -->|녹음 종료| Action{사용자 액션}
-    Action -->|저장 · 분석| Convert[PCM → WAV 변환<br/>RIFF 헤더 추가]
-    Convert --> Delete[PCM 파일 삭제]
-    Delete --> Save[(Room DB 저장<br/>파일명 · min/avg/max dB · 생성일)]
-    Save --> Navigate([Result 화면으로 이동])
+        opt 버퍼 > 500,000 samples
+            Service->>File: PCM 파일로 flush
+        end
+    end
+
+    User->>UI: 녹음 종료 (저장/분석)
+    UI->>Service: saveRecord()
+    Service->>Audio: stopRecording()
+    Service->>File: PCM → WAV 변환 (RIFF 헤더 추가)
+    Service->>File: PCM 파일 삭제
+    Service-->>UI: RecordServiceState.SAVED
+    UI->>DB: 녹음 기록 저장 (파일명 · min/avg/max dB)
+    UI->>User: Result 화면으로 이동
 ```
 
 ### AI 소음원 분석 파이프라인
 
 ```mermaid
-flowchart LR
-    subgraph input ["입력"]
-        WAV[WAV 파일 로드<br/>헤더 44byte Skip]
+sequenceDiagram
+    participant UI as Result 화면
+    participant VM as ResultViewModel
+    participant UC as GetRecordAnalyze
+    participant DB as Room DB
+    participant TF as TensorFlow Lite
+    participant Web as WebView
+
+    UI->>VM: fileName 전달
+    VM->>UC: getRecordAnalyze(fileName)
+    UC->>DB: 녹음 기록 조회
+    DB-->>UC: RecordHistoryEntity
+
+    alt 분석 결과 없음
+        UC->>TF: analyzeAudio(wavFile)
+
+        loop WAV 파일 전체 구간
+            TF->>TF: 0.1초 단위 분할 (0.9초 skip)
+
+            alt dB >= 45
+                TF->>TF: YAMNet 모델 추론
+                TF->>TF: 14개 카테고리 매핑 (정확도 >= 66%)
+                TF->>TF: 카테고리별 점수 누적
+            end
+        end
+
+        TF-->>UC: Map(NoiseCategoryEnum, Int)
+        UC->>DB: 분석 결과 저장
     end
 
-    subgraph preprocess ["전처리"]
-        Split[0.1초 단위 분할<br/>0.9초 간격 Skip]
-        Filter{데시벨<br/>>= 45dB?}
-        Split --> Filter
-        Filter -->|No| Split
-    end
-
-    subgraph inference ["TF Lite 추론"]
-        Load[TensorAudio 로드]
-        Classify[AudioClassifier<br/>YAMNet 모델 추론]
-        Map[14개 소음 카테고리 매핑<br/>정확도 >= 66% 필터링]
-        Load --> Classify --> Map
-    end
-
-    subgraph output ["결과"]
-        Score[카테고리별 점수 누적]
-        Percent[백분율 환산 · 정렬]
-        DB[(Room DB 저장)]
-        WebView[WebView 결과 표시<br/>Query Parameter 전달<br/>uid · filename · avg · 카테고리 점수]
-        Score --> Percent --> DB --> WebView
-    end
-
-    WAV --> Split
-    Filter -->|Yes| Load
-    Map --> Score
+    UC-->>VM: RecordHistoryEntity (분석 포함)
+    VM-->>UI: ResultUiState.LOADED
+    UI->>Web: URL + Query Parameter 전달 (uid · filename · avg · 카테고리 점수)
 ```
 
 ### 트래킹 검사
 
 ```mermaid
-flowchart TD
-    Start([트래킹 시작]) --> Service[TrackingForegroundService 실행<br/>Foreground Notification 표시]
-    Service --> Timer[CountDownTimer 시작<br/>최대 50분]
-    Service --> Audio[AudioRecord 시작<br/>100ms 주기 수집]
+sequenceDiagram
+    actor User
+    participant UI as Tracking 화면
+    participant Service as TrackingForegroundService
+    participant Audio as AudioRecord
+    participant Timer as CountDownTimer
 
-    Audio --> Decibel[데시벨 연산]
-    Decibel --> Compare{현재 분의<br/>최대 dB 갱신?}
-    Compare -->|Yes| Update[분당 최대 dB 업데이트]
-    Compare -->|No| Audio
-    Update --> Audio
+    User->>UI: 트래킹 시작
+    UI->>Service: startTrackingService()
+    Service->>Timer: 시작 (최대 50분)
+    Service->>Audio: 시작 (100ms 주기)
 
-    Timer --> MinuteCheck{분 변경?}
-    MinuteCheck -->|Yes| SaveMinute[해당 분의 최대 dB 기록<br/>NoiseHistoryData에 저장]
-    SaveMinute --> Timer
-    MinuteCheck -->|No| Timer
-
-    Timer -->|시간 종료| End[TrackingServiceState.END]
-
-    subgraph state ["상태 전이"]
-        direction LR
-        IDLE --> TRACKING --> PAUSE --> TRACKING2[TRACKING] --> END2[END]
+    loop 매 100ms
+        Audio->>Service: PCM 데이터
+        Service->>Service: 데시벨 연산
+        Service->>Service: 현재 분 최대 dB 갱신
     end
 
-    End --> Result([트래킹 결과 화면<br/>시간대별 최대 dB 표시])
+    loop 매분
+        Timer->>Service: onTick
+        Service->>Service: NoiseHistoryData 기록
+        Service->>UI: TrackingServiceData (SharedFlow)
+    end
+
+    alt 일시정지/재개
+        User->>UI: 일시정지
+        UI->>Service: pauseTrackingService()
+        Note over Service: TRACKING → PAUSE
+        User->>UI: 재개
+        UI->>Service: startTrackingService()
+        Note over Service: PAUSE → TRACKING
+    end
+
+    Timer->>Service: onFinish (시간 종료)
+    Service->>Audio: stopRecording()
+    Service-->>UI: TrackingServiceState.END
+    UI->>User: 결과 화면 (시간대별 최대 dB)
 ```
 
 ## 🐾 Architecture
