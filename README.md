@@ -44,6 +44,46 @@
 * Flow
   * 비동기 데이터 흐름을 관리하기 위한 라이브러리입니다.
 
+## 🔄 App FlowChart
+
+```mermaid
+flowchart TD
+    Start([앱 실행]) --> Activity[GreenieActivity]
+    Activity --> Permission{권한 요청<br/>마이크 · 포그라운드 서비스 · 알림}
+    Permission -->|허용| Home[Home 화면]
+
+    Home -->|녹음 버튼 FAB| Record[Record 화면]
+    Home -->|트래킹 버튼| Tracking[Tracking 화면]
+    Home -->|하단 네비게이션| History[History 화면]
+    Home -->|웹 링크| WebContent[WebView<br/>소음 팁 · 상담 · 건강 정보]
+
+    Record -.-|ServiceState 관리<br/>동시 실행 불가| Tracking
+
+    subgraph recording ["녹음 및 AI 분석"]
+        Record --> RecordService[RecordForegroundService 시작]
+        RecordService --> AudioCapture[AudioRecord<br/>실시간 PCM 데이터 수집]
+        AudioCapture --> DecibelCalc[데시벨 연산<br/>실시간 · 최소 · 평균 · 최대]
+        DecibelCalc -->|녹음 종료| WavConvert[PCM → WAV 변환]
+        WavConvert --> SaveDB[(Room DB 저장)]
+        SaveDB --> TFAnalyze[TensorFlow Lite 분석<br/>YAMNet 모델]
+        TFAnalyze --> Classify[소음원 분류<br/>14개 카테고리 · 정확도 66% 이상]
+        Classify --> ResultWeb[분석 결과<br/>WebView 표시]
+    end
+
+    subgraph tracking ["트래킹 검사"]
+        Tracking --> TrackService[TrackingForegroundService 시작]
+        TrackService --> LongMonitor[장시간 모니터링<br/>최대 50분]
+        LongMonitor --> PerMinute[분당 최대 dB 기록]
+        PerMinute --> TrackResult[트래킹 결과 화면]
+    end
+
+    subgraph history ["기록 조회"]
+        History --> DateSearch[날짜별 녹음 기록 조회]
+        DateSearch -->|재분석| TFAnalyze
+        DateSearch -->|결과 확인| ResultWeb
+    end
+```
+
 ## 🐾 Architecture
 Clean Architecture 및 MVVM 아키텍처를 멀티모듈 구조에 적용하여, 크게 Data -> Domain <- UI 의 구조를 가지며,
 Dagger hilt를 통한 DI를 활용하여 UI에서 필요한 비즈니스 로직을 호출할 수 있습니다.
